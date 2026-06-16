@@ -62,8 +62,6 @@ jobs:
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-          build-args: |
-            VITE_API_URL=https://api.michelin.thysmadev.fr/api
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
