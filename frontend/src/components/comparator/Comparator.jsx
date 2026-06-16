@@ -182,12 +182,10 @@ export default function Comparator() {
 
   const cardHeader = (t, isOther, isReco, selector, onChangeFn) => (
     <div style={{ marginBottom: 22 }}>
-      {/* Race badges */}
-      {t.races?.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-          {t.races.map((r) => <RaceBadge key={r} race={r} />)}
-        </div>
-      )}
+      {/* Race badges — always rendered to preserve vertical alignment across cards */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap', minHeight: 22 }}>
+        {t.races?.map((r) => <RaceBadge key={r} race={r} />)}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ width: 56, height: 56, borderRadius: '50%', background: isOther ? 'radial-gradient(circle at 50% 38%,#3a3f47,#15171c 72%)' : 'radial-gradient(circle at 50% 38%,#16335f,#060f22 72%)', border: isOther ? '8px solid #0d0f12' : '8px solid #0a1a36', flex: '0 0 auto' }} />
         <div style={{ flex: 1 }}>
