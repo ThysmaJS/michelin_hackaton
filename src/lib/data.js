@@ -137,10 +137,10 @@ export const regionRoutes = {
 };
 
 export const retailerData = [
-  { name: 'Cyclable', address: '12 rue de la République', city: 'Lyon 2e', distance: '1,2 km', stock: true, x: '42%', y: '40%' },
-  { name: 'Culture Vélo', address: '30 cours Émile Zola', city: 'Villeurbanne', distance: '3,8 km', stock: true, x: '63%', y: '33%' },
-  { name: 'Decathlon', address: '112 cours Charlemagne', city: 'Lyon 2e', distance: '5,1 km', stock: false, x: '30%', y: '66%' },
-  { name: 'Probikeshop', address: '8 rue des Aciéries', city: 'Saint-Étienne', distance: '12,4 km', stock: true, x: '72%', y: '70%' },
+  { name: 'Cyclable', address: '12 rue de la République', city: 'Lyon 2e', distance: '1,2 km', stock: true, lat: 45.7484, lng: 4.8302 },
+  { name: 'Culture Vélo', address: '30 cours Émile Zola', city: 'Villeurbanne', distance: '3,8 km', stock: true, lat: 45.7665, lng: 4.8737 },
+  { name: 'Decathlon', address: '112 cours Charlemagne', city: 'Lyon 2e', distance: '5,1 km', stock: false, lat: 45.7429, lng: 4.8200 },
+  { name: 'Probikeshop', address: '8 rue des Aciéries', city: 'Saint-Étienne', distance: '12,4 km', stock: true, lat: 45.4400, lng: 4.3876 },
 ];
 
 export const footerCols = [

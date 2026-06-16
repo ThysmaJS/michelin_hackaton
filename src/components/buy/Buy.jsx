@@ -1,16 +1,18 @@
+import { useState } from 'react';
 import { useApp } from '../../store/AppContext.jsx';
 import { getColors } from '../../lib/theme.js';
 import { tyres, competitors, retailerData } from '../../lib/data.js';
 import Hoverable from '../Hoverable.jsx';
 import RetailerList from './RetailerList.jsx';
-import MapPlaceholder from './MapPlaceholder.jsx';
+import Map from './Map.jsx';
 
 const ALL = { ...tyres, ...competitors };
-const pins = retailerData.map((r) => ({ x: r.x, y: r.y, label: r.name }));
+const pins = retailerData.map((r) => ({ lat: r.lat, lng: r.lng, label: r.name, stock: r.stock }));
 
 export default function Buy() {
   const { state, actions } = useApp();
   const c = getColors(state.theme);
+  const [activeRetailer, setActiveRetailer] = useState(null);
 
   const leftT = ALL[state.compareLeft] || tyres['power-road'];
 
@@ -47,7 +49,7 @@ export default function Buy() {
             </div>
 
             {state.searched ? (
-              <RetailerList c={c} retailers={retailerData} count={retailerData.length} postal={state.postal} price={leftT.price} />
+              <RetailerList c={c} retailers={retailerData} count={retailerData.length} postal={state.postal} price={leftT.price} activeRetailer={activeRetailer} onSelect={setActiveRetailer} />
             ) : (
               <div style={{ background: c.panel, border: `1px dashed ${c.borderStrong}`, borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
                 <div style={{ fontSize: 30, marginBottom: 10 }}>🔍</div>
@@ -56,7 +58,13 @@ export default function Buy() {
             )}
           </div>
 
-          <MapPlaceholder c={c} searched={state.searched} pins={pins} />
+          <Map
+            c={c}
+            searched={state.searched}
+            pins={pins}
+            activeRetailer={activeRetailer}
+            onPinClick={(label) => setActiveRetailer((prev) => prev?.name === label ? null : retailerData.find((r) => r.name === label) ?? null)}
+          />
         </div>
       </div>
     </section>
