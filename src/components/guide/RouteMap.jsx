@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
+// All colors from the official Michelin digital charter
 const SEG_COLOR = {
-  depart:  '#16a34a',
-  sommet:  '#e63946',
-  arrivee: '#f97316',
-  cle:     '#FCE500',
-  descente:'#84BD00',
+  depart:  '#84BD00',  // Vert Généreux
+  sommet:  '#582C83',  // Violet Engagé
+  arrivee: '#00205B',  // Bleu Foncé Michelin
+  cle:     '#FCE500',  // Jaune Michelin
+  descente:'#53565A',  // Gris Responsable
 };
 
 export default function RouteMap({ waypoints, segments, height = 300 }) {
@@ -36,7 +37,7 @@ export default function RouteMap({ waypoints, segments, height = 300 }) {
       const seg = segments?.[i];
       const isStart = i === 0;
       const isEnd = i === waypoints.length - 1;
-      const color = isStart ? '#16a34a' : isEnd ? '#f97316' : (SEG_COLOR[seg?.type] ?? '#FCE500');
+      const color = isStart ? '#84BD00' : isEnd ? '#00205B' : (SEG_COLOR[seg?.type] ?? '#FCE500');
       const radius = (isStart || isEnd) ? 9 : 7;
       const marker = L.circleMarker(latlng, {
         radius, fillColor: color, color: '#ffffff', weight: 2.5, fillOpacity: 1, zIndexOffset: 100,

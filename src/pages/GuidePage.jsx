@@ -21,12 +21,13 @@ const ALL_ROUTES = (() => {
   return result;
 })();
 
+// All colors from the official Michelin digital charter
 const SEGMENT_DOT = {
-  depart:  { bg: '#16a34a', border: '#16a34a', label: 'Départ' },
-  sommet:  { bg: '#e63946', border: '#e63946', label: 'Sommet' },
-  arrivee: { bg: '#f97316', border: '#f97316', label: 'Arrivée' },
-  cle:     { bg: '#FCE500', border: '#c9b800', label: 'Point clé' },
-  descente:{ bg: '#84BD00', border: '#6a9700', label: 'Descente' },
+  depart:  { bg: '#84BD00', border: '#84BD00', label: 'Départ' },    // Vert Généreux
+  sommet:  { bg: '#582C83', border: '#582C83', label: 'Sommet' },    // Violet Engagé
+  arrivee: { bg: '#00205B', border: '#00205B', label: 'Arrivée' },   // Bleu Foncé Michelin
+  cle:     { bg: '#FCE500', border: '#c9b800', label: 'Point clé' }, // Jaune Michelin
+  descente:{ bg: '#53565A', border: '#53565A', label: 'Descente' },  // Gris Responsable
 };
 
 function StarRow({ stars, size = 18 }) {
@@ -367,7 +368,7 @@ export default function GuidePage() {
               </div>
               {/* Legend */}
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {[['Départ', '#16a34a'], ['Point clé', '#FCE500'], ['Sommet', '#e63946'], ['Arrivée', '#f97316']].map(([label, color]) => (
+                {[['Départ', '#84BD00'], ['Point clé', '#FCE500'], ['Sommet', '#582C83'], ['Arrivée', '#00205B']].map(([label, color]) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: c.inkFaint }}>
                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, border: '2px solid #fff', boxShadow: '0 0 0 1px rgba(0,0,0,.18)', flexShrink: 0 }} />
                     {label}

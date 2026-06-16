@@ -7,8 +7,8 @@ import TyreSelect from './TyreSelect.jsx';
 
 const ALL = { ...tyres, ...competitors };
 
-const WIN  = '#84BD00';
-const LOSE = '#E12B2B';
+const WIN  = '#84BD00';  // Vert Généreux — official Michelin charter
+const LOSE = '#B71C1C';  // Danger — official Michelin charter
 
 // higher = better (grip, rendement, endurance, legerete)
 function cmpHigh(mine, other) {
@@ -52,7 +52,7 @@ function RaceBadge({ race }) {
 
 function TubelessBadge() {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 800, color: '#fff', background: '#16a34a', padding: '3px 9px', borderRadius: 999 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 800, color: '#fff', background: '#84BD00', padding: '3px 9px', borderRadius: 999 }}>
       ◉ TUBELESS
     </span>
   );
@@ -115,7 +115,7 @@ function MarginalGains({ c, leftT, rightT }) {
   const accent = '#FCE500';
 
   return (
-    <div style={{ marginTop: 28, background: `linear-gradient(120deg,#00205B,#002d80)`, borderRadius: 20, padding: '28px 32px', display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div style={{ marginTop: 28, background: `linear-gradient(120deg,#00205B,#27509B)`, borderRadius: 20, padding: '28px 32px', display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
       <div style={{ flex: 1, minWidth: 220 }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.35em', color: 'rgba(252,229,0,.7)', textTransform: 'uppercase', marginBottom: 10 }}>Marginal Gains</div>
         <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: '#fff' }}>
