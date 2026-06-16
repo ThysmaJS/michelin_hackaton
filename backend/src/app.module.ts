@@ -13,6 +13,7 @@ import { ComparatorModule } from './comparator/comparator.module';
 import { GuideModule } from './guide/guide.module';
 import { RetailersModule } from './retailers/retailers.module';
 import { ReferenceModule } from './reference/reference.module';
+import { BootstrapModule } from './bootstrap/bootstrap.module';
 
 /**
  * Module racine de l'application.
@@ -51,6 +52,7 @@ import { ReferenceModule } from './reference/reference.module';
     GuideModule,
     RetailersModule,
     ReferenceModule,
+    BootstrapModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,11 +1,11 @@
-import { recommend, optimalTyreForRoute } from './recommendation';
+import { recommend, calcPressure, optimalTyreForRoute } from './recommendation';
 
 describe('recommend', () => {
-  it('oriente le gravel intensif vers Power Gravel, occasionnel vers Power Adventure', () => {
-    expect(recommend({ route: 'Chemin / gravel', freq: 'Intensif' })).toBe(
-      'power-gravel',
-    );
+  it('mappe la fréquence sur les paliers gravel', () => {
     expect(recommend({ route: 'Chemin / gravel', freq: 'Compétition' })).toBe(
+      'power-gravel-rs',
+    );
+    expect(recommend({ route: 'Chemin / gravel', freq: 'Intensif' })).toBe(
       'power-gravel',
     );
     expect(recommend({ route: 'Chemin / gravel', freq: 'Occasionnel' })).toBe(
@@ -13,22 +13,50 @@ describe('recommend', () => {
     );
   });
 
-  it('gère la route lisse selon la fréquence', () => {
+  it('route lisse : le palier + la jante orientent vers le tubeless', () => {
+    // Jante large par défaut (19 mm ≥ 17) → versions tubeless.
     expect(recommend({ route: 'Route lisse', freq: 'Compétition' })).toBe(
-      'power-cup',
+      'power-cup-tlr',
     );
     expect(recommend({ route: 'Route lisse', freq: 'Intensif' })).toBe(
-      'power-road',
+      'power-road-tlr',
     );
-    expect(recommend({ route: 'Route lisse', freq: 'Occasionnel' })).toBe(
-      'lithion-4',
-    );
-    expect(recommend({ route: 'Route lisse', freq: 'Régulier' })).toBe(
-      'power-road',
-    );
+    // Jante étroite → versions à chambre.
+    expect(
+      recommend({ route: 'Route lisse', freq: 'Compétition', rimWidth: 15 }),
+    ).toBe('power-cup');
+    expect(
+      recommend({ route: 'Route lisse', freq: 'Intensif', rimWidth: 15 }),
+    ).toBe('power-road');
+    // Occasionnel → entrée de gamme.
+    expect(
+      recommend({ route: 'Route lisse', freq: 'Occasionnel', rimWidth: 15 }),
+    ).toBe('lithion-4');
   });
 
-  it('gère pavés et mixte', () => {
+  it('la FTP élevée relève le palier (≥ compétition au-delà de 300 W)', () => {
+    expect(
+      recommend({
+        route: 'Route lisse',
+        freq: 'Occasionnel',
+        rimWidth: 15,
+        ftp: 320,
+      }),
+    ).toBe('power-cup');
+  });
+
+  it("le cycliste lourd est redirigé vers l'endurance (sauf compétition)", () => {
+    expect(
+      recommend({
+        route: 'Route lisse',
+        freq: 'Intensif',
+        riderWeight: 95,
+        rimWidth: 15,
+      }),
+    ).toBe('lithion-4');
+  });
+
+  it('gère pavés, mixte et le défaut', () => {
     expect(recommend({ route: 'Pavés', freq: 'Compétition' })).toBe(
       'power-cup',
     );
@@ -38,10 +66,27 @@ describe('recommend', () => {
     expect(recommend({ route: 'Mixte', freq: 'Régulier' })).toBe(
       'power-adventure',
     );
+    expect(recommend({ route: 'Inconnu', freq: 'Inconnu' })).toBe(
+      'power-road-tlr',
+    ); // tier 1 + jante large
+  });
+});
+
+describe('calcPressure', () => {
+  it('calcule des pressions cohérentes (75 kg, jante 19 mm, tubeless)', () => {
+    const p = calcPressure(75, 8, 19);
+    expect(p.tireMm).toBe(28);
+    expect(p.tubeless).toBe(true);
+    expect(p.front).toBe('3.8');
+    expect(p.rear).toBe('5.6');
+    // L'arrière est toujours plus gonflé que l'avant (répartition du poids).
+    expect(Number(p.rear)).toBeGreaterThan(Number(p.front));
   });
 
-  it('retombe sur power-road par défaut', () => {
-    expect(recommend({ route: 'Inconnu', freq: 'Inconnu' })).toBe('power-road');
+  it('jante étroite (< 17 mm) → pneu fin, pas de tubeless', () => {
+    const p = calcPressure(60, 7, 14);
+    expect(p.tireMm).toBe(23);
+    expect(p.tubeless).toBe(false);
   });
 });
 

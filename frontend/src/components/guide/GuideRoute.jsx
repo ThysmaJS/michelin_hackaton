@@ -1,16 +1,17 @@
 import { useApp } from '../../store/AppContext.jsx';
+import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
-import { tyres, competitors, regions, regionRoutes, gRoute, gGravel } from '../../lib/data.js';
+import { gRoute, gGravel } from '../../lib/gradients.js';
 import { postalToRegion, optimalTyreForRoute } from '../../lib/recommend.js';
 import Hoverable from '../Hoverable.jsx';
 import RouteCard from './RouteCard.jsx';
 
-const ALL = { ...tyres, ...competitors };
-
 export default function GuideRoute() {
   const { state, actions } = useApp();
+  const { tyres, competitors, regions, regionRoutes } = useData();
   const c = getColors(state.theme);
 
+  const ALL = { ...tyres, ...competitors };
   const selectedKey = state.compareLeft;
   const selectedT = ALL[selectedKey] || tyres['power-road'];
   const isMichelin = !!tyres[selectedKey];

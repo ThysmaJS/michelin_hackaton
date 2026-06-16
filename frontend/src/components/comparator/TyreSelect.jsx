@@ -1,9 +1,10 @@
-import { tyres, competitors } from '../../lib/data.js';
-
-const michelinOpts = Object.keys(tyres).map((k) => ({ value: k, label: `Michelin ${tyres[k].name}` }));
-const otherOpts = Object.keys(competitors).map((k) => ({ value: k, label: `${competitors[k].brand} ${competitors[k].name}` }));
+import { useData } from '../../store/DataContext.jsx';
 
 export default function TyreSelect({ c, value, onChange }) {
+  const { tyres, competitors } = useData();
+  const michelinOpts = Object.keys(tyres).map((k) => ({ value: k, label: `Michelin ${tyres[k].name}` }));
+  const otherOpts = Object.keys(competitors).map((k) => ({ value: k, label: `${competitors[k].brand} ${competitors[k].name}` }));
+
   return (
     <select
       value={value}

@@ -1,8 +1,7 @@
 import { useApp } from '../../store/AppContext.jsx';
+import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
-import { tyres } from '../../lib/data.js';
 import { scrollToId } from '../../lib/scroll.js';
-import { calcPressure } from '../../lib/recommend.js';
 import Hoverable from '../Hoverable.jsx';
 
 const hasAdvancedData = (s) =>
@@ -67,12 +66,14 @@ function AdvancedSummary({ state, c }) {
 
 export default function WizardResults() {
   const { state, actions } = useApp();
+  const { tyres } = useData();
   const c = getColors(state.theme);
 
-  const recT    = tyres[state.recommended || 'power-road'];
+  const recT    = tyres[state.recommended] || tyres['power-road'];
   const why     = buildWhy(recT, state);
   const advanced = hasAdvancedData(state);
-  const pressure = advanced ? calcPressure(state.riderWeight, state.bikeWeight, state.rimWidth) : null;
+  // La pression conseillée est calculée par l'API (POST /wizard/recommend).
+  const pressure = advanced ? state.pressureAdvice : null;
 
   const tags = [
     recT.usage,

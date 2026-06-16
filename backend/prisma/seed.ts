@@ -5,9 +5,10 @@
  *   1. Catalogue produit réel (Excel « ACTIVE PRODUCTS ») → gammes Michelin +
  *      variantes/SKU. Les scores radar sont calculés via deriveScores() à partir
  *      des attributs réels (usage, gomme, poids, segment, renfort).
- *   2. Données du frontend (data.js / guideData.js, chargées dynamiquement) →
+ *   2. Données de référence (prisma/seed-data/*.mjs, chargées dynamiquement) →
  *      concurrents, vélos, régions/parcours du Guide, revendeurs, et toutes les
- *      tables de référence de l'UI.
+ *      tables de référence de l'UI. (Source de vérité du contenu, autrefois dans
+ *      le frontend ; le backend est désormais autonome.)
  *
  * Le seed est idempotent : il purge les tables puis réinsère tout.
  */
@@ -23,7 +24,7 @@ const prisma = new PrismaClient();
 // le `import()` dynamique en `require()`.
 const importEsm = new Function('s', 'return import(s)') as (s: string) => Promise<Record<string, unknown>>;
 
-const FRONTEND_LIB = path.resolve(__dirname, '../../frontend/src/lib');
+const SEED_DATA = path.resolve(__dirname, 'seed-data');
 const EXCEL_PATH = path.resolve(__dirname, '../data/2W Bicycle Product Catalog v4 - 2026.xlsx');
 
 // ─── Helpers de normalisation ────────────────────────────────────────────────
@@ -269,6 +270,8 @@ async function seedMichelinCatalog(meta: Record<string, MichelinMeta>): Promise<
         pressure,
         isMichelin: true,
         discontinued: isShowcase ? false : allDiscontinued,
+        proTeams: m?.proTeams ?? [],
+        proTips: m?.proTips ?? [],
         races: m?.races?.length
           ? { create: m.races.map((name) => ({ name })) }
           : undefined,
@@ -397,6 +400,11 @@ async function seedGuide(
           difficulty: detail?.difficulty ?? null,
           season: detail?.season ?? null,
           tyreReason: detail?.tyreReason ?? null,
+          komTime: detail?.kom?.time ?? null,
+          komHolder: detail?.kom?.holder ?? null,
+          komTyre: detail?.kom?.tyre ?? null,
+          komYear: detail?.kom?.year ?? null,
+          komContext: detail?.kom?.context ?? null,
           recommendedTyreId,
           segments: detail
             ? { create: detail.segments.map((s, i) => ({ order: i, name: s.name, km: s.km, type: s.type, description: s.desc })) }
@@ -493,6 +501,8 @@ interface MichelinMeta {
   watts: number;
   priceEur: number;
   races: string[];
+  proTeams: string[];
+  proTips: string[];
   // Scores curatés par le frontend pour les gammes vitrines (priment sur deriveScores).
   grip: number;
   rendement: number;
@@ -518,6 +528,8 @@ interface FrontTyre {
   tubeless?: boolean;
   tag?: string;
   races?: string[];
+  proTeams?: string[];
+  proTips?: string[];
 }
 interface FrontRoute {
   t: string;
@@ -536,6 +548,7 @@ interface FrontRouteDetail {
   tyreReason: string;
   waypoints: [number, number][];
   segments: { name: string; km: string; type: string; desc: string }[];
+  kom?: { time: string; holder: string; tyre: string; year: number; context: string };
 }
 interface FrontRetailer {
   name: string;
@@ -569,6 +582,8 @@ function buildMichelinMeta(tyres: Record<string, FrontTyre>): Record<string, Mic
       watts: t.watts,
       priceEur: price(t.price) ?? 0,
       races: t.races ?? [],
+      proTeams: t.proTeams ?? [],
+      proTips: t.proTips ?? [],
       grip: t.grip,
       rendement: t.rendement,
       endurance: t.endurance,
@@ -583,9 +598,9 @@ function buildMichelinMeta(tyres: Record<string, FrontTyre>): Record<string, Mic
 async function main(): Promise<void> {
   console.log('🌱 Seed Michelin Vélo');
 
-  // Chargement des données pures du frontend.
-  const data = await importEsm(pathToFileURL(path.join(FRONTEND_LIB, 'data.js')).href);
-  const guide = await importEsm(pathToFileURL(path.join(FRONTEND_LIB, 'guideData.js')).href);
+  // Chargement des données de référence (source locale au backend).
+  const data = await importEsm(pathToFileURL(path.join(SEED_DATA, 'data.mjs')).href);
+  const guide = await importEsm(pathToFileURL(path.join(SEED_DATA, 'guideData.mjs')).href);
 
   const tyres = data.tyres as Record<string, FrontTyre>;
   const competitors = data.competitors as Record<string, FrontTyre>;

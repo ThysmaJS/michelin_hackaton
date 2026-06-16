@@ -1,6 +1,7 @@
 import {
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -46,4 +47,34 @@ export class RecommendInputDto {
   @Min(0)
   @Max(10000)
   km?: number;
+
+  // ─── Étape « Mon profil » (optionnelle) — affine la recommandation ───────────
+
+  /** Poids du cycliste en kg. */
+  @IsOptional()
+  @IsInt()
+  @Min(30)
+  @Max(200)
+  riderWeight?: number;
+
+  /** Poids du vélo en kg (décimales acceptées). */
+  @IsOptional()
+  @IsNumber()
+  @Min(3)
+  @Max(30)
+  bikeWeight?: number;
+
+  /** Largeur interne de jante en mm. */
+  @IsOptional()
+  @IsInt()
+  @Min(10)
+  @Max(40)
+  rimWidth?: number;
+
+  /** FTP (puissance seuil) en watts. */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(700)
+  ftp?: number;
 }

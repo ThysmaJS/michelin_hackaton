@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { useApp } from '../../store/AppContext.jsx';
+import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
-import { tyres, competitors, retailerData } from '../../lib/data.js';
 import Hoverable from '../Hoverable.jsx';
 import RetailerList from './RetailerList.jsx';
 import Map from './Map.jsx';
 
-const ALL = { ...tyres, ...competitors };
-const pins = retailerData.map((r) => ({ lat: r.lat, lng: r.lng, label: r.name, stock: r.stock }));
-
 export default function Buy() {
   const { state, actions } = useApp();
+  const { tyres, competitors } = useData();
   const c = getColors(state.theme);
   const [activeRetailer, setActiveRetailer] = useState(null);
 
+  const ALL = { ...tyres, ...competitors };
   const leftT = ALL[state.compareLeft] || tyres['power-road'];
+  // Revendeurs issus de la recherche API (state.retailers).
+  const retailers = state.retailers;
+  const pins = retailers.map((r) => ({ lat: r.lat, lng: r.lng, label: r.name, stock: r.stock }));
 
   return (
     <section id="buy" style={{ position: 'relative', padding: '96px 32px', background: c.sectionB, transition: 'background .5s ease' }}>
@@ -48,12 +50,18 @@ export default function Buy() {
               </Hoverable>
             </div>
 
-            {state.searched ? (
-              <RetailerList c={c} retailers={retailerData} count={retailerData.length} postal={state.postal} price={leftT.price} activeRetailer={activeRetailer} onSelect={setActiveRetailer} />
+            {state.searched && retailers.length > 0 ? (
+              <RetailerList c={c} retailers={retailers} count={retailers.length} postal={state.postal} price={leftT.price} activeRetailer={activeRetailer} onSelect={setActiveRetailer} />
             ) : (
               <div style={{ background: c.panel, border: `1px dashed ${c.borderStrong}`, borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: 30, marginBottom: 10 }}>🔍</div>
-                <p style={{ margin: 0, fontSize: 14, color: c.inkMuted }}>Saisissez votre code postal pour afficher les revendeurs, leur stock et le prix.</p>
+                <div style={{ fontSize: 30, marginBottom: 10 }}>{state.searched ? '🗺' : '🔍'}</div>
+                <p style={{ margin: 0, fontSize: 14, color: c.inkMuted }}>
+                  {state.searching
+                    ? 'Recherche des revendeurs…'
+                    : state.searched
+                      ? 'Aucun revendeur référencé pour cette zone. Essayez une grande ville (ex. Lyon, 69003).'
+                      : 'Saisissez votre code postal pour afficher les revendeurs, leur stock et le prix.'}
+                </p>
               </div>
             )}
           </div>
@@ -63,7 +71,7 @@ export default function Buy() {
             searched={state.searched}
             pins={pins}
             activeRetailer={activeRetailer}
-            onPinClick={(label) => setActiveRetailer((prev) => prev?.name === label ? null : retailerData.find((r) => r.name === label) ?? null)}
+            onPinClick={(label) => setActiveRetailer((prev) => prev?.name === label ? null : retailers.find((r) => r.name === label) ?? null)}
           />
         </div>
       </div>

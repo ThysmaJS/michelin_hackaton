@@ -1,6 +1,6 @@
 import { getColors, getHero } from '../lib/theme.js';
 import { useApp } from '../store/AppContext.jsx';
-import { heroStats } from '../lib/data.js';
+import { useData } from '../store/DataContext.jsx';
 import { scrollToId } from '../lib/scroll.js';
 import useHeroTilt from '../hooks/useHeroTilt.js';
 import Hoverable from './Hoverable.jsx';
@@ -37,6 +37,7 @@ function HeroStage({ hero, tiltRef }) {
 
 export default function Hero() {
   const { state } = useApp();
+  const { heroStats } = useData();
   const c = getColors(state.theme);
   const hero = getHero(state.theme);
   const { heroRef, tiltRef } = useHeroTilt();

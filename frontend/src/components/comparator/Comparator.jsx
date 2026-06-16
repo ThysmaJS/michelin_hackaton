@@ -1,11 +1,9 @@
 import { useApp } from '../../store/AppContext.jsx';
+import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
-import { tyres, competitors, metricDefs } from '../../lib/data.js';
 import { scrollToId } from '../../lib/scroll.js';
 import Hoverable from '../Hoverable.jsx';
 import TyreSelect from './TyreSelect.jsx';
-
-const ALL = { ...tyres, ...competitors };
 
 const WIN  = '#84BD00';  // Vert Généreux — official Michelin charter
 const LOSE = '#B71C1C';  // Danger — official Michelin charter
@@ -149,8 +147,10 @@ function MarginalGains({ c, leftT, rightT }) {
 
 export default function Comparator() {
   const { state, actions } = useApp();
+  const { tyres, competitors, metricDefs } = useData();
   const c = getColors(state.theme);
 
+  const ALL = { ...tyres, ...competitors };
   const hasReco = !!state.recommended;
   const leftT  = ALL[state.compareLeft]  || tyres['power-road'];
   const rightT = ALL[state.compareRight] || competitors['continental-gp5000'];

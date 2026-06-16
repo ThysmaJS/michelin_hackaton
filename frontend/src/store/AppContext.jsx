@@ -1,11 +1,11 @@
-import { createContext, useContext, useMemo, useReducer, useCallback } from 'react';
-import { recommend } from '../lib/recommend.js';
+import { createContext, useContext, useMemo, useReducer, useCallback, useRef, useEffect } from 'react';
+import * as api from '../lib/api.js';
 
 const initialState = {
   theme: 'editorial',
   page: 'home',
   started: false,
-  step: 0, // 0..5 questions, 6 = results
+  step: 0, // 0..5 questions, 6 = advanced (optional), 7 = results
   marque: '', marqueQuery: '', marqueFocus: false,
   modele: '', modeleQuery: '', modeleFocus: false,
   currentTyre: '',
@@ -15,10 +15,14 @@ const initialState = {
   bikeWeight: 8,    // kg, slider 4-15
   rimWidth: 19,     // mm internal width: 15 | 17 | 19 | 21 | 25
   ftp: null,        // W (number) or null = not known
-  recommended: null,
+  recommended: null,        // slug recommandé (renvoyé par l'API)
+  pressureAdvice: null,     // { front, rear, tireMm, tubeless } (renvoyé par l'API)
+  recommending: false,      // appel /wizard/recommend en cours
+  recommendError: null,
   compareLeft: 'power-road',
   compareRight: 'continental-gp5000',
-  postal: '', searched: false,
+  postal: '', searched: false, searching: false,
+  retailers: [], searchedRegion: null,
   guideRegion: '',
   guideSelectedTitle: null,
 };
@@ -50,15 +54,14 @@ function reducer(state, action) {
         marque: '', marqueQuery: '', modele: '', modeleQuery: '',
         currentTyre: '', freq: '', route: '', km: 200,
         riderWeight: 75, bikeWeight: 8, rimWidth: 19, ftp: null,
-        recommended: null,
+        recommended: null, pressureAdvice: null, recommending: false, recommendError: null,
       };
 
+    // Incrémente les étapes 0→6 ; l'étape 6 → résultats est gérée en asynchrone (API).
     case 'NEXT_STEP': {
       if (!canAdvance(state)) return state;
       if (state.step < 6) return { ...state, step: state.step + 1 };
-      // step 6 (advanced, optional) → compute recommendation → results at step 7
-      const rec = recommend(state);
-      return { ...state, recommended: rec, compareLeft: rec, step: 7 };
+      return state;
     }
 
     case 'PREV_STEP': {
@@ -69,9 +72,6 @@ function reducer(state, action) {
 
     case 'JUMP_TO':
       return state.started ? { ...state, step: action.index } : state;
-
-    case 'SEARCH':
-      return state.postal.trim() ? { ...state, searched: true } : state;
 
     case 'TOGGLE_THEME':
       return { ...state, theme: state.theme === 'immersive' ? 'editorial' : 'immersive' };
@@ -89,6 +89,10 @@ const AppContext = createContext(null);
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // Réf. vers l'état courant : permet aux actions asynchrones de le lire sans recréer les callbacks.
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
+
   const patch = useCallback((p) => dispatch({ type: 'PATCH', patch: p }), []);
 
   const actions = useMemo(() => ({
@@ -100,9 +104,39 @@ export function AppProvider({ children }) {
 
     startWizard: () => dispatch({ type: 'START_WIZARD' }),
     resetWizard: () => dispatch({ type: 'RESET_WIZARD' }),
-    nextStep: () => dispatch({ type: 'NEXT_STEP' }),
     prevStep: () => dispatch({ type: 'PREV_STEP' }),
     jumpTo: (index) => dispatch({ type: 'JUMP_TO', index }),
+
+    /**
+     * Avance dans le wizard. Les étapes 0→6 incrémentent ; l'étape finale
+     * interroge l'API (POST /wizard/recommend) pour obtenir le pneu conseillé.
+     */
+    nextStep: async () => {
+      const s = stateRef.current;
+      if (!canAdvance(s)) return;
+      if (s.step < 6) { dispatch({ type: 'NEXT_STEP' }); return; }
+
+      patch({ recommending: true, recommendError: null });
+      try {
+        const res = await api.recommend({
+          route: s.route,
+          freq: s.freq,
+          riderWeight: s.riderWeight,
+          bikeWeight: s.bikeWeight,
+          rimWidth: s.rimWidth,
+          ...(s.ftp != null ? { ftp: s.ftp } : {}),
+        });
+        patch({
+          recommended: res.recommendedSlug,
+          compareLeft: res.recommendedSlug,
+          pressureAdvice: res.pressureAdvice,
+          recommending: false,
+          step: 7,
+        });
+      } catch (e) {
+        patch({ recommending: false, recommendError: e.message });
+      }
+    },
 
     // marque autocomplete
     onMarqueChange: (e) => patch({ marqueQuery: e.target.value, marqueFocus: true, marque: '' }),
@@ -130,7 +164,19 @@ export function AppProvider({ children }) {
     // guide + buy
     onGuideRegionChange: (e) => patch({ guideRegion: e.target.value }),
     onPostalChange: (e) => patch({ postal: e.target.value, searched: false }),
-    doSearch: () => dispatch({ type: 'SEARCH' }),
+
+    /** Recherche les revendeurs proches via l'API (GET /retailers). */
+    doSearch: async () => {
+      const s = stateRef.current;
+      if (!s.postal.trim()) return;
+      patch({ searching: true });
+      try {
+        const res = await api.searchRetailers(s.postal, s.compareLeft);
+        patch({ searched: true, searching: false, retailers: res.retailers, searchedRegion: res.region });
+      } catch {
+        patch({ searched: true, searching: false, retailers: [], searchedRegion: null });
+      }
+    },
   }), [patch]);
 
   const value = useMemo(() => ({ state, actions, canAdvance: canAdvance(state) }), [state, actions]);

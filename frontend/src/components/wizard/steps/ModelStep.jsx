@@ -1,11 +1,12 @@
 import { useApp } from '../../../store/AppContext.jsx';
+import { useData } from '../../../store/DataContext.jsx';
 import { getColors } from '../../../lib/theme.js';
-import { modelsByBrand, genericModels } from '../../../lib/data.js';
 import Autocomplete from '../Autocomplete.jsx';
 import Hoverable from '../../Hoverable.jsx';
 
 export default function ModelStep() {
   const { state, actions } = useApp();
+  const { modelsByBrand, genericModels } = useData();
   const c = getColors(state.theme);
 
   const modelList = modelsByBrand[state.marque] || genericModels;

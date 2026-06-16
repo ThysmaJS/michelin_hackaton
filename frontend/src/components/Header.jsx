@@ -1,6 +1,6 @@
 import { useApp } from '../store/AppContext.jsx';
+import { useData } from '../store/DataContext.jsx';
 import { getColors } from '../lib/theme.js';
-import { tyres } from '../lib/data.js';
 import { scrollToId, scrollToTop } from '../lib/scroll.js';
 import Hoverable from './Hoverable.jsx';
 
@@ -24,11 +24,12 @@ function Logo({ c }) {
 
 export default function Header() {
   const { state, actions } = useApp();
+  const { tyres } = useData();
   const c = getColors(state.theme);
   const im = state.theme === 'immersive';
   const onGuide = state.page === 'guide';
   const hasReco = !!state.recommended;
-  const recoShortName = tyres[state.recommended || 'power-road'].name;
+  const recoShortName = (tyres[state.recommended] || tyres['power-road'])?.name;
 
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 60, background: c.headerBg, backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderBottom: `1px solid ${c.headerBorder}`, transition: 'background .5s ease,border-color .5s ease' }}>
