@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:22-alpine3.22 AS builder
 WORKDIR /app
 
 COPY package*.json ./
@@ -8,10 +8,10 @@ RUN npm ci
 RUN npx prisma generate
 
 COPY . .
-RUN npm run build
+RUN npm run build && test -f dist/main.js || (echo "ERROR: dist/main.js not found after build" && exit 1)
 
 # ---- runner ----
-FROM node:22-alpine
+FROM node:22-alpine3.22
 WORKDIR /app
 ENV NODE_ENV=production
 
