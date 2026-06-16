@@ -13,6 +13,7 @@ export const routeDetails = {
       { name: 'Vue panoramique', km: '7', type: 'cle', desc: 'Le décor s\'ouvre sur la vallée. Prudence si la chaussée est humide.' },
       { name: 'Sommet · 1 450 m', km: '9', type: 'sommet', desc: 'Panorama à 360° sur les Alpes. Longue descente technique jusqu\'à Saint-Étienne-de-Cuines.' },
     ],
+    kom: { time: '22 min 41 s', holder: 'Marc Hirschi', tyre: 'Michelin Power Cup', year: 2022, context: 'Critérium du Dauphiné · Étape 3' },
   },
   'Le Col de la Croix de Fer': {
     elevation: '2 000 m D+', difficulty: 'Difficile', season: 'Juin – Septembre', tyreKey: 'power-cup',
@@ -24,6 +25,7 @@ export const routeDetails = {
       { name: 'Lacets sommitaux', km: '80', type: 'cle', desc: 'Les pentes se redressent à 10 %. Le placement de roue est décisif.' },
       { name: 'Croix de Fer · 2 067 m', km: '92', type: 'sommet', desc: 'Sommet mythique. Vue sur les grandes Rousses et la Belledonne avant la descente.' },
     ],
+    kom: { time: '1 h 07 min', holder: 'Romain Bardet', tyre: 'Michelin Power Cup', year: 2022, context: 'Critérium du Dauphiné · Étape 4' },
   },
   'Les Chemins du Beaujolais': {
     elevation: '450 m D+', difficulty: 'Modéré', season: 'Mars – Novembre', tyreKey: 'power-adventure',
@@ -46,6 +48,7 @@ export const routeDetails = {
       { name: 'Chalet Reynard', km: '16', type: 'cle', desc: 'La forêt cède la place au désert de pierres blanches. Vent fort possible.' },
       { name: 'Sommet · 1 909 m', km: '21', type: 'sommet', desc: 'Tour météo iconique. Vue jusqu\'aux Alpes et aux Pyrénées par beau temps.' },
     ],
+    kom: { time: '57 min 12 s', holder: 'Jonas Vingegaard', tyre: 'Michelin Power Cup', year: 2023, context: 'Tour de France · Étape 11' },
   },
   'La Corniche des Maures': {
     elevation: '650 m D+', difficulty: 'Modéré', season: 'Toute l\'année', tyreKey: 'power-all-season',
@@ -145,6 +148,7 @@ export const routeDetails = {
       { name: 'Plateau du Lienz', km: '62', type: 'cle', desc: 'La route s\'ouvre sur les alpages. Vent violent possible à cette altitude.' },
       { name: 'Tourmalet · 2 115 m', km: '76', type: 'sommet', desc: 'Le toit des Pyrénées cyclistes. Statue de l\'Octave Lapize avant la descente.' },
     ],
+    kom: { time: '1 h 02 min', holder: 'Tadej Pogačar', tyre: 'Michelin Power Cup', year: 2023, context: 'Tour de France · Étape 17' },
   },
   'Les Gorges de l\'Hérault': {
     elevation: '750 m D+', difficulty: 'Modéré', season: 'Mars – Novembre', tyreKey: 'power-road',

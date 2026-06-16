@@ -1,0 +1,358 @@
+// Schéma Prisma — base Michelin Vélo.
+//
+// Sources de données :
+//   • Catalogue produit réel « 2W Bicycle Product Catalog v4 - 2026.xlsx »
+//     → TyreProduct (gamme) / TyreVariant (SKU) / TyreRace.
+//   • Données frontend (data.js / guideData.js) → concurrents, vélos, régions,
+//     parcours du Guide, revendeurs, et tables de référence de l'UI.
+//
+// Les 4 scores radar (grip/rendement/endurance/legerete) ne sont PAS stockés en dur
+// dans l'Excel : ils sont calculés au seed par ScoringService.deriveScores() à partir
+// des attributs réels (usage, gomme, poids, segment, renfort).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Catalogue pneus
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Type de terrain normalisé, consommé par le moteur de recommandation et l'UI.
+enum Terrain {
+  route
+  gravel
+  city
+  mtb
+}
+
+/// Une gamme de pneu (ex. « Power Cup »). Agrège une ou plusieurs variantes/SKU.
+/// Couvre aussi les concurrents (isMichelin = false), sans variantes.
+model TyreProduct {
+  id            String  @id @default(cuid())
+  /// Slug stable utilisé par le frontend et le moteur de reco (ex. "power-cup").
+  slug          String  @unique
+  brand         String  @default("MICHELIN")
+  /// Nom d'affichage (ex. "Power Cup").
+  name          String
+  /// Nom commercial complet du catalogue (ex. "MICHELIN POWER CUP COMPETITION LINE").
+  webRangeName  String?
+  /// Désignation interne de la gamme (clé de regroupement des variantes Excel).
+  rangeInternal String?
+
+  // Attributs marketing (frontend) — absents de l'Excel, donc optionnels.
+  tag   String?
+  usage String?
+
+  // Classification catalogue.
+  productType String? // TUBULAR | TYRE
+  cycleType   String? // ROAD | CITY | MTB
+  segment     String? // PREMIUM RACING LINE | ... | ACCESS LINE
+  terrain     Terrain
+
+  // Caractéristiques techniques agrégées (entrées du calcul de scores).
+  uses                       String[] @default([])
+  terrainTypes               String[] @default([])
+  rubber                     String?
+  rubberTechnologies         String[] @default([])
+  casingTechnologies         String[] @default([])
+  treadTechnologies          String[] @default([])
+  reinforcementTechnologies  String[] @default([])
+  eBikeTechnologies          String[] @default([])
+  tubeless                   Boolean  @default(false)
+  reinforced                 Boolean  @default(false)
+
+  // Scores radar 0–100 (calculés via ScoringService pour Michelin, fournis pour concurrents).
+  grip      Int
+  rendement Int
+  endurance Int
+  legerete  Int
+
+  // Données comparateur.
+  weightG  Int? // poids « vitrine » (variante la plus légère active)
+  watts    Int? // résistance au roulement (frontend ; absent de l'Excel)
+  priceEur Float? // MSRP indicatif (frontend ; absent de l'Excel)
+  /// Résumé des dimensions disponibles (ex. "700×25 à 32C"). Calculé pour Michelin, fourni pour les concurrents.
+  sizes    String?
+  /// Résumé de la plage de pression (ex. "5 – 8 bar").
+  pressure String?
+
+  isMichelin   Boolean @default(true)
+  discontinued Boolean @default(false)
+
+  variants     TyreVariant[]
+  races        TyreRace[]
+  // Parcours du Guide qui recommandent ce pneu.
+  guideRoutes  Route[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([terrain])
+  @@index([isMichelin])
+}
+
+/// Une variante / SKU concrète d'une gamme (taille, EAN, pression, poids…).
+model TyreVariant {
+  id        String      @id @default(cuid())
+  product   TyreProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  globalId String? // ex. "BI-92"
+  /// Code fabricant Michelin (CAI) — identifiant naturel unique d'un SKU.
+  cai      String  @unique
+  ean      String? @unique
+  mspn     String?
+  upc      String?
+
+  designation    String? // désignation interne
+  webDesignation String?
+
+  widthEtrto    String? // ex. "33", "22/23"
+  diameterEtrto String? // ex. "622"
+  webWidthMm    String?
+  webDiameterMm String?
+
+  weightG        Int?
+  minPressureBar Float?
+  maxPressureBar Float?
+  minPressurePsi Int?
+  maxPressurePsi Int?
+
+  bead     String?
+  sealing  String? // TUBULAR | TUBE TYPE | TUBELESS READY
+  rimType  String?
+  tpi      String?
+  fitting  String?
+
+  sidewallColor     String?
+  treadPatternColor String?
+  shoulderColor     String?
+  borderColor       String?
+  labelType         String?
+
+  marketPerimeter String?
+  discontinuedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+/// Palmarès / homologation course d'une gamme (Michelin uniquement).
+model TyreRace {
+  id        String      @id @default(cuid())
+  product   TyreProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  name      String
+
+  @@index([productId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Vélos (autocomplétion du wizard)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BikeBrand {
+  id     String      @id @default(cuid())
+  name   String      @unique
+  slug   String      @unique
+  models BikeModel[]
+
+  createdAt DateTime @default(now())
+}
+
+/// Modèle de vélo. Les modèles génériques (« Route Performance »…) ont brandId null.
+model BikeModel {
+  id        String     @id @default(cuid())
+  brand     BikeBrand? @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brandId   String?
+  name      String
+  /// Type de vélo : Route | Endurance | Aéro | Gravel | Urbain.
+  type      String
+  isGeneric Boolean    @default(false)
+
+  @@unique([brandId, name])
+  @@index([brandId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Guide Michelin (régions / parcours)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Region {
+  id     String  @id @default(cuid())
+  key    String  @unique // ex. "aura"
+  label  String
+  routes Route[]
+}
+
+/// Un parcours éditorial du Guide, enrichi (segments, tracé, pneu conseillé).
+model Route {
+  id       String  @id @default(cuid())
+  title    String  @unique
+  region   Region  @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId String
+
+  terrain  Terrain // route | gravel
+  loc      String
+  distance String
+  surface  String
+  stars    String
+  blurb    String
+
+  // Détails éditoriaux (guideData.js).
+  elevation  String?
+  difficulty String?
+  season     String?
+  tyreReason String?
+
+  // Pneu conseillé pour ce parcours.
+  recommendedTyre   TyreProduct? @relation(fields: [recommendedTyreId], references: [id])
+  recommendedTyreId String?
+
+  segments  RouteSegment[]
+  waypoints RouteWaypoint[]
+
+  @@index([regionId])
+}
+
+model RouteSegment {
+  id          String @id @default(cuid())
+  route       Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId     String
+  order       Int
+  name        String
+  km          String
+  type        String // depart | cle | sommet | descente | arrivee
+  description String
+
+  @@index([routeId])
+}
+
+model RouteWaypoint {
+  id      String @id @default(cuid())
+  route   Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId String
+  order   Int
+  lat     Float
+  lng     Float
+
+  @@index([routeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Revendeurs (section « Acheter »)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Retailer {
+  id        String  @id @default(cuid())
+  name      String
+  address   String
+  city      String
+  distance  String
+  stock     Boolean @default(true)
+  lat       Float
+  lng       Float
+  /// Région de rattachement (clé Region.key) pour la recherche par code postal.
+  regionKey String?
+
+  @@index([regionKey])
+}
+
+/// Mapping département (2 chiffres) → région, pour postalToRegion().
+model PostalDepartment {
+  id        String @id @default(cuid())
+  code      String @unique // ex. "69"
+  regionKey String
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tables de référence de l'UI (déportées du frontend data.js)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Fréquence de sortie (étape 4 du wizard).
+model Frequency {
+  id          String @id @default(cuid())
+  code        String @unique // ex. "Intensif" (clé du moteur de reco)
+  label       String
+  description String
+  icon        String
+  order       Int
+}
+
+/// Type de routes (étape 5 du wizard) — code = clé du moteur de reco.
+model RouteType {
+  id          String @id @default(cuid())
+  code        String @unique // ex. "Route lisse"
+  label       String
+  description String
+  icon        String
+  order       Int
+}
+
+/// Option « pneus actuels » (étape 3 du wizard).
+model CurrentTyreOption {
+  id    String @id @default(cuid())
+  label String
+  note  String
+  order Int
+}
+
+/// Définition d'une métrique du comparateur (radar).
+model Metric {
+  id    String @id @default(cuid())
+  label String // ex. "Adhérence"
+  key   String @unique // ex. "grip"
+  order Int
+}
+
+/// Étape du wizard (libellés affichés).
+model WizardStep {
+  id    String @id @default(cuid())
+  block String
+  title String
+  hint  String
+  order Int
+}
+
+/// Statistique mise en avant dans le Hero.
+model HeroStat {
+  id    String @id @default(cuid())
+  num   String
+  label String
+  order Int
+}
+
+model FooterColumn {
+  id    String       @id @default(cuid())
+  title String
+  order Int
+  links FooterLink[]
+}
+
+model FooterLink {
+  id       String       @id @default(cuid())
+  column   FooterColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  columnId String
+  label    String
+  order    Int
+
+  @@index([columnId])
+}
+
+/// Liens « plats » du pied de page : type = social | legal.
+model SiteLink {
+  id    String @id @default(cuid())
+  type  String // social | legal
+  label String
+  url   String?
+  order Int
+
+  @@index([type])
+}

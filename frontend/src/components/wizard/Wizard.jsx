@@ -11,7 +11,7 @@ export default function Wizard() {
 
   let panel;
   if (!state.started) panel = <WizardIntro />;
-  else if (state.step <= 5) panel = <WizardSteps />;
+  else if (state.step <= 6) panel = <WizardSteps />;
   else panel = <WizardResults />;
 
   return (
@@ -22,7 +22,7 @@ export default function Wizard() {
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.3em', color: '#FCE500', textTransform: 'uppercase', marginBottom: 14 }}>Étape par étape</div>
             <h2 style={{ margin: 0, fontSize: 'clamp(34px,4vw,52px)', fontWeight: 900, letterSpacing: '-.025em', lineHeight: 1, color: c.ink }}>Trouver mon pneu</h2>
           </div>
-          <p style={{ margin: 0, maxWidth: 380, fontSize: 15, lineHeight: 1.6, color: c.inkMuted }}>Six questions sur votre vélo et votre usage. À la clé : la recommandation Michelin la plus juste.</p>
+          <p style={{ margin: 0, maxWidth: 380, fontSize: 15, lineHeight: 1.6, color: c.inkMuted }}>Six questions sur votre vélo et votre usage, plus une étape optionnelle pour affiner. À la clé : la recommandation Michelin la plus juste.</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '330px 1fr', gap: 28, alignItems: 'stretch' }}>
