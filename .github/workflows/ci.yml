@@ -1,0 +1,99 @@
+name: Build & Push Docker images
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/michelin-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/michelin-frontend
+
+jobs:
+  backend:
+    name: Build backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Met à jour le repo GitOps pour déclencher ArgoCD
+  gitops-update:
+    name: Trigger ArgoCD via GitOps repo
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: ThysmaJS/gitops   # ← remplace par ton repo GitOps
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Update deploy SHA annotation
+        run: |
+          # Met à jour l'annotation deploy-sha dans les manifests du backend et du frontend.
+          # Adapte les chemins selon la structure de TON repo GitOps.
+          SHA="${{ github.sha }}"
+          SHORT="${SHA:0:7}"
+          DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          sed -i "s|deploy-sha:.*|deploy-sha: \"$SHORT ($DATE)\"|g" \
+            gitops/apps/michelin/backend/deployment.yaml \
+            gitops/apps/michelin/frontend/deployment.yaml
+
+      - name: Commit and push
+        run: |
+          cd gitops
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "chore: deploy michelin ${{ github.sha }}"
+          git push
