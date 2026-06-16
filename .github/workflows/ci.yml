@@ -73,7 +73,7 @@ jobs:
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
         with:
-          repository: ThysmaJS/gitops   # ← remplace par ton repo GitOps
+          repository: ThysmaJS/k3s-gitops-lab  # ← remplace par ton repo GitOps
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
 
