@@ -29,7 +29,7 @@ export default function WizardSteps() {
       {/* step header */}
       <div style={{ padding: '26px 40px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.04em', color: '#FCE500', background: 'rgba(252,229,0,.12)', border: '1px solid rgba(252,229,0,.3)', padding: '4px 10px', borderRadius: 999 }}>{meta.block}</span>
+          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.04em', color: '#00205B', background: '#FCE500', border: '1px solid rgba(0,0,0,.08)', padding: '4px 10px', borderRadius: 999 }}>{meta.block}</span>
           {isAdvanced ? (
             <span style={{ fontSize: 12, fontWeight: 700, color: '#84BD00', background: 'rgba(132,189,0,.1)', border: '1px solid rgba(132,189,0,.3)', padding: '4px 10px', borderRadius: 999 }}>
               Optionnel

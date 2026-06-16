@@ -131,7 +131,7 @@ function RouteDetail({ route, c, onScrollToMap }) {
             {(tyre.races?.length > 0 || tyre.proTeams?.length > 0) && (
               <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
                 {tyre.races?.map((r) => (
-                  <span key={r} style={{ fontSize: 11, fontWeight: 800, color: '#FCE500', background: 'rgba(252,229,0,.1)', border: '1px solid rgba(252,229,0,.3)', borderRadius: 999, padding: '3px 9px', whiteSpace: 'nowrap' }}>🏆 {r}</span>
+                  <span key={r} style={{ fontSize: 11, fontWeight: 800, color: '#00205B', background: '#FCE500', border: '1px solid rgba(0,0,0,.08)', borderRadius: 999, padding: '3px 9px', whiteSpace: 'nowrap' }}>🏆 {r}</span>
                 ))}
                 {tyre.proTeams?.map((team) => (
                   <span key={team} style={{ fontSize: 11, fontWeight: 800, color: '#27509B', background: 'rgba(39,80,155,.08)', border: '1px solid rgba(39,80,155,.25)', borderRadius: 999, padding: '3px 9px', whiteSpace: 'nowrap' }}>◉ {team}</span>
