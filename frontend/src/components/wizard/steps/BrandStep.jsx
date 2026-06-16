@@ -1,11 +1,12 @@
 import { useApp } from '../../../store/AppContext.jsx';
+import { useData } from '../../../store/DataContext.jsx';
 import { getColors } from '../../../lib/theme.js';
-import { brands } from '../../../lib/data.js';
 import Autocomplete from '../Autocomplete.jsx';
 import Hoverable from '../../Hoverable.jsx';
 
 export default function BrandStep() {
   const { state, actions } = useApp();
+  const { brands } = useData();
   const c = getColors(state.theme);
 
   const mq = state.marqueQuery.trim().toLowerCase();

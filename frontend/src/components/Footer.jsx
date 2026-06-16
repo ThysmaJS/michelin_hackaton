@@ -1,10 +1,11 @@
 import { useApp } from '../store/AppContext.jsx';
+import { useData } from '../store/DataContext.jsx';
 import { getFoot } from '../lib/theme.js';
-import { socials, footerCols, legalLinks } from '../lib/data.js';
 import Hoverable from './Hoverable.jsx';
 
 export default function Footer() {
   const { state } = useApp();
+  const { socials, footerCols, legalLinks } = useData();
   const foot = getFoot(state.theme);
 
   return (

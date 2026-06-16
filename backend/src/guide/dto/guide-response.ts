@@ -29,6 +29,15 @@ export interface WaypointResponse {
   lng: number;
 }
 
+/** Record (KOM) du segment. */
+export interface KomResponse {
+  time: string;
+  holder: string;
+  tyre: string;
+  year: number;
+  context: string;
+}
+
 /** Détail éditorial complet d'un parcours. */
 export interface RouteDetail extends RouteSummary {
   region: { key: string; label: string };
@@ -36,6 +45,7 @@ export interface RouteDetail extends RouteSummary {
   difficulty: string | null;
   season: string | null;
   tyreReason: string | null;
+  kom: KomResponse | null;
   recommendedTyre: TyreSummary | null;
   segments: SegmentResponse[];
   waypoints: WaypointResponse[];
@@ -76,6 +86,16 @@ export function toRouteDetail(r: RouteFull): RouteDetail {
     difficulty: r.difficulty,
     season: r.season,
     tyreReason: r.tyreReason,
+    kom:
+      r.komHolder && r.komTime
+        ? {
+            time: r.komTime,
+            holder: r.komHolder,
+            tyre: r.komTyre ?? '',
+            year: r.komYear ?? 0,
+            context: r.komContext ?? '',
+          }
+        : null,
     recommendedTyre: r.recommendedTyre
       ? toTyreSummary(r.recommendedTyre)
       : null,

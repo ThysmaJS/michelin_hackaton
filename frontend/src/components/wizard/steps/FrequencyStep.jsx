@@ -1,10 +1,11 @@
 import { useApp } from '../../../store/AppContext.jsx';
+import { useData } from '../../../store/DataContext.jsx';
 import { getColors } from '../../../lib/theme.js';
-import { freqList } from '../../../lib/data.js';
 import Hoverable from '../../Hoverable.jsx';
 
 export default function FrequencyStep() {
   const { state, actions } = useApp();
+  const { freqList } = useData();
   const c = getColors(state.theme);
 
   return (

@@ -18,11 +18,17 @@ export interface TyreSummary {
   endurance: number;
   legerete: number;
   weightG: number | null;
+  /** Poids formaté pour l'affichage (ex. "215 g"). */
+  weight: string | null;
   watts: number | null;
   priceEur: number | null;
+  /** Prix formaté pour l'affichage (ex. "54,90 €"). */
+  price: string | null;
   isMichelin: boolean;
   discontinued: boolean;
   races: string[];
+  proTeams: string[];
+  proTips: string[];
 }
 
 /** Forme publique d'une variante/SKU (détail produit). */
@@ -77,11 +83,15 @@ export function toTyreSummary(p: ProductWithRaces): TyreSummary {
     endurance: p.endurance,
     legerete: p.legerete,
     weightG: p.weightG,
+    weight: p.weightG != null ? `${p.weightG} g` : null,
     watts: p.watts,
     priceEur: p.priceEur,
+    price: p.priceEur != null ? `${p.priceEur.toFixed(2).replace('.', ',')} €` : null,
     isMichelin: p.isMichelin,
     discontinued: p.discontinued,
     races: p.races.map((r) => r.name),
+    proTeams: p.proTeams,
+    proTips: p.proTips,
   };
 }
 

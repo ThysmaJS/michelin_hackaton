@@ -61,15 +61,20 @@ describe('API Michelin Vélo (e2e)', () => {
       .expect(404);
   });
 
-  it('POST /api/wizard/recommend — recommande un pneu cohérent', () => {
-    return request(app.getHttpServer())
-      .post('/api/wizard/recommend')
-      .send({ route: 'Route lisse', freq: 'Compétition' })
-      .expect(201)
-      .expect((res) => {
-        expect(res.body.recommendedSlug).toBe('power-cup');
-        expect(res.body.tyre.name).toBe('Power Cup');
-      });
+  it('POST /api/wizard/recommend — recommande un pneu cohérent + pression', () => {
+    return (
+      request(app.getHttpServer())
+        .post('/api/wizard/recommend')
+        // Jante étroite → version à chambre (power-cup) plutôt que tubeless.
+        .send({ route: 'Route lisse', freq: 'Compétition', rimWidth: 15 })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body.recommendedSlug).toBe('power-cup');
+          expect(res.body.tyre.name).toBe('Power Cup');
+          expect(res.body.pressureAdvice).toHaveProperty('front');
+          expect(res.body.pressureAdvice).toHaveProperty('rear');
+        })
+    );
   });
 
   it('POST /api/wizard/recommend — entrée invalide rejetée (400)', () => {

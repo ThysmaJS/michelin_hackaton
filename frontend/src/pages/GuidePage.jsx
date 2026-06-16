@@ -1,25 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../store/AppContext.jsx';
+import { useData } from '../store/DataContext.jsx';
 import { getColors } from '../lib/theme.js';
-import { tyres, regions, regionRoutes, gRoute, gGravel } from '../lib/data.js';
-import { routeDetails } from '../lib/guideData.js';
+import { gRoute, gGravel } from '../lib/gradients.js';
 import { optimalTyreForRoute } from '../lib/recommend.js';
 import Hoverable from '../components/Hoverable.jsx';
 import RouteMap from '../components/guide/RouteMap.jsx';
-
-// Computed once — static catalogue data doesn't change at runtime
-const ALL_ROUTES = (() => {
-  const result = [];
-  let ri = 0; let gi = 0;
-  regions.forEach(({ key }) => {
-    (regionRoutes[key] || []).forEach((r) => {
-      const tyreKey = routeDetails[r.title]?.tyreKey || optimalTyreForRoute(r);
-      const img = r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length];
-      result.push({ ...r, regionKey: key, tyreKey, img });
-    });
-  });
-  return result;
-})();
 
 // All colors from the official Michelin digital charter
 const SEGMENT_DOT = {
@@ -73,7 +59,7 @@ function SegmentTimeline({ segments, c }) {
   );
 }
 
-function RouteDetail({ route, c, onScrollToMap }) {
+function RouteDetail({ route, c, onScrollToMap, tyres, routeDetails }) {
   const details = routeDetails[route.title];
   const tyreKey = details?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
@@ -210,7 +196,7 @@ function RouteDetail({ route, c, onScrollToMap }) {
   );
 }
 
-function RouteListCard({ route, isActive, onClick, c }) {
+function RouteListCard({ route, isActive, onClick, c, tyres, routeDetails }) {
   const tyreKey = routeDetails[route.title]?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
   const terrainLabel = route.surface?.split(' · ')[0] || (route.t === 'gravel' ? 'Gravel' : 'Route');
@@ -251,7 +237,22 @@ function RouteListCard({ route, isActive, onClick, c }) {
 
 export default function GuidePage() {
   const { state } = useApp();
+  const { tyres, regions, regionRoutes, routeDetails } = useData();
   const c = getColors(state.theme);
+
+  // Aplatit tous les parcours et leur attribue un dégradé de fond (placeholder paysage).
+  const ALL_ROUTES = useMemo(() => {
+    const result = [];
+    let ri = 0; let gi = 0;
+    regions.forEach(({ key }) => {
+      (regionRoutes[key] || []).forEach((r) => {
+        const tyreKey = routeDetails[r.title]?.tyreKey || optimalTyreForRoute(r);
+        const img = r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length];
+        result.push({ ...r, regionKey: key, tyreKey, img });
+      });
+    });
+    return result;
+  }, [regions, regionRoutes, routeDetails]);
 
   const [filterRegion, setFilterRegion] = useState('all');
   const [filterTerrain, setFilterTerrain] = useState('all');
@@ -271,7 +272,7 @@ export default function GuidePage() {
     if (filterRegion !== 'all' && r.regionKey !== filterRegion) return false;
     if (filterTerrain !== 'all' && r.t !== filterTerrain) return false;
     return true;
-  }), [filterRegion, filterTerrain]);
+  }), [filterRegion, filterTerrain, ALL_ROUTES]);
 
   // Keep selection valid when filters change; preserve if still in list
   useEffect(() => {
@@ -383,6 +384,8 @@ export default function GuidePage() {
                 isActive={selectedRoute?.title === route.title}
                 onClick={() => setSelectedRoute(route)}
                 c={c}
+                tyres={tyres}
+                routeDetails={routeDetails}
               />
             ))
           )}
@@ -391,7 +394,14 @@ export default function GuidePage() {
         {/* Right: sticky detail */}
         <div style={{ position: 'sticky', top: 140 }}>
           {selectedRoute ? (
-            <RouteDetail key={selectedRoute.title} route={selectedRoute} c={c} onScrollToMap={routeDetails[selectedRoute.title]?.waypoints ? scrollToMap : null} />
+            <RouteDetail
+              key={selectedRoute.title}
+              route={selectedRoute}
+              c={c}
+              tyres={tyres}
+              routeDetails={routeDetails}
+              onScrollToMap={routeDetails[selectedRoute.title]?.waypoints ? scrollToMap : null}
+            />
           ) : (
             <div style={{ borderRadius: 20, border: `1px dashed ${c.border}`, padding: '80px 40px', textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: 16 }}>★</div>

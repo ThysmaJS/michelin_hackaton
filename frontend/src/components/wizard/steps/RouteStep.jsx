@@ -1,10 +1,11 @@
 import { useApp } from '../../../store/AppContext.jsx';
+import { useData } from '../../../store/DataContext.jsx';
 import { getColors } from '../../../lib/theme.js';
-import { routeList } from '../../../lib/data.js';
 import Hoverable from '../../Hoverable.jsx';
 
 export default function RouteStep() {
   const { state, actions } = useApp();
+  const { routeList } = useData();
   const c = getColors(state.theme);
 
   return (

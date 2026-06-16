@@ -81,6 +81,10 @@ model TyreProduct {
   sizes    String?
   /// Résumé de la plage de pression (ex. "5 – 8 bar").
   pressure String?
+  /// Équipes pros qui utilisent la gamme (contenu éditorial frontend).
+  proTeams String[] @default([])
+  /// Conseils d'expert (montage, pression, entretien) — contenu éditorial frontend.
+  proTips  String[] @default([])
 
   isMichelin   Boolean @default(true)
   discontinued Boolean @default(false)
@@ -211,6 +215,13 @@ model Route {
   difficulty String?
   season     String?
   tyreReason String?
+
+  // Record (KOM) du segment — optionnel, présent sur certains parcours.
+  komTime    String?
+  komHolder  String?
+  komTyre    String?
+  komYear    Int?
+  komContext String?
 
   // Pneu conseillé pour ce parcours.
   recommendedTyre   TyreProduct? @relation(fields: [recommendedTyreId], references: [id])

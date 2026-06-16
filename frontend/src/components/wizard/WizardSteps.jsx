@@ -1,6 +1,6 @@
 import { useApp } from '../../store/AppContext.jsx';
+import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
-import { stepMeta } from '../../lib/data.js';
 import Hoverable from '../Hoverable.jsx';
 import BrandStep from './steps/BrandStep.jsx';
 import ModelStep from './steps/ModelStep.jsx';
@@ -16,6 +16,7 @@ const ADVANCED_STEP = 6;
 
 export default function WizardSteps() {
   const { state, actions, canAdvance } = useApp();
+  const { stepMeta } = useData();
   const c = getColors(state.theme);
 
   const isAdvanced = state.step === ADVANCED_STEP;
