@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -13,6 +13,7 @@ const SEG_COLOR = {
 export default function RouteMap({ waypoints, segments, height = 300 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || !waypoints?.length) return;
@@ -25,40 +26,80 @@ export default function RouteMap({ waypoints, segments, height = 300 }) {
       maxZoom: 17,
     }).addTo(map);
 
-    L.polyline(waypoints, {
-      color: '#27509b',
-      weight: 5,
-      opacity: 0.85,
-      lineJoin: 'round',
-      lineCap: 'round',
+    // Straight-line fallback shown while OSRM loads (dashed, dimmed)
+    const fallbackLine = L.polyline(waypoints, {
+      color: '#27509b', weight: 4, opacity: 0.35, dashArray: '8 6',
     }).addTo(map);
 
+    // Segment markers (start, end, key points)
     waypoints.forEach((latlng, i) => {
       const seg = segments?.[i];
-      const segType = seg?.type || 'cle';
       const isStart = i === 0;
       const isEnd = i === waypoints.length - 1;
-      const color = isStart ? '#16a34a' : isEnd ? '#f97316' : (SEG_COLOR[segType] ?? '#FCE500');
+      const color = isStart ? '#16a34a' : isEnd ? '#f97316' : (SEG_COLOR[seg?.type] ?? '#FCE500');
       const radius = (isStart || isEnd) ? 9 : 7;
-
       const marker = L.circleMarker(latlng, {
-        radius,
-        fillColor: color,
-        color: '#ffffff',
-        weight: 2.5,
-        fillOpacity: 1,
+        radius, fillColor: color, color: '#ffffff', weight: 2.5, fillOpacity: 1, zIndexOffset: 100,
       }).addTo(map);
-
-      if (seg?.name) {
-        marker.bindTooltip(seg.name, { permanent: false, direction: 'top', offset: [0, -radius] });
-      }
+      if (seg?.name) marker.bindTooltip(seg.name, { permanent: false, direction: 'top', offset: [0, -radius] });
     });
 
-    map.fitBounds(L.latLngBounds(waypoints), { padding: [36, 36], animate: false });
+    map.fitBounds(L.latLngBounds(waypoints), { padding: [40, 40], animate: false });
     mapRef.current = map;
 
-    return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
+    // Fetch road-snapped route from OSRM (cycling profile)
+    let cancelled = false;
+    setLoading(true);
+    const coords = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
+
+    fetch(`https://router.project-osrm.org/route/v1/cycling/${coords}?geometries=geojson&overview=full`)
+      .then((r) => {
+        if (!r.ok) throw new Error('OSRM error');
+        return r.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        const geometry = data.routes?.[0]?.geometry?.coordinates;
+        if (geometry?.length) {
+          const latlngs = geometry.map(([lng, lat]) => [lat, lng]);
+          map.removeLayer(fallbackLine);
+          L.polyline(latlngs, { color: '#27509b', weight: 5, opacity: 0.9, lineJoin: 'round', lineCap: 'round' }).addTo(map);
+          map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+        } else {
+          // OSRM returned no route — solidify fallback
+          map.removeLayer(fallbackLine);
+          L.polyline(waypoints, { color: '#27509b', weight: 5, opacity: 0.9 }).addTo(map);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        map.removeLayer(fallbackLine);
+        L.polyline(waypoints, { color: '#27509b', weight: 5, opacity: 0.9 }).addTo(map);
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
+    };
   }, [waypoints]);
 
-  return <div ref={containerRef} style={{ height, width: '100%' }} />;
+  return (
+    <div style={{ position: 'relative' }}>
+      <div ref={containerRef} style={{ height, width: '100%' }} />
+      {loading && (
+        <div style={{
+          position: 'absolute', top: 12, right: 48, zIndex: 1000,
+          background: 'rgba(255,255,255,.92)', borderRadius: 8, padding: '6px 14px',
+          fontSize: 12, fontWeight: 700, color: '#27509b',
+          display: 'flex', alignItems: 'center', gap: 7,
+          boxShadow: '0 2px 10px rgba(0,0,0,.18)',
+        }}>
+          <span style={{ display: 'inline-block', animation: 'spinSlow 1s linear infinite' }}>⟳</span>
+          Calcul du tracé routier…
+        </div>
+      )}
+    </div>
+  );
 }
