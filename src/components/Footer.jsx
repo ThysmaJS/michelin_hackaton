@@ -27,7 +27,7 @@ export default function Footer() {
                   as="a"
                   href="#"
                   style={{ width: 38, height: 38, borderRadius: '50%', border: `1px solid ${foot.socialBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: foot.ink, textDecoration: 'none', fontSize: 14, fontWeight: 700, transition: 'background .2s,border-color .2s' }}
-                  hoverStyle={{ borderColor: '#FCE500' }}
+                  hoverStyle={{ border: '1px solid #FCE500' }}
                 >
                   {s}
                 </Hoverable>

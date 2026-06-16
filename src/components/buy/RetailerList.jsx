@@ -31,7 +31,7 @@ export default function RetailerList({ c, retailers, count, postal, price, activ
               transition: 'border-color .2s, background .2s',
               cursor: 'pointer',
             }}
-            hoverStyle={{ borderColor: isActive ? '#FCE500' : c.borderStrong }}
+            hoverStyle={{ border: `1.5px solid ${isActive ? '#FCE500' : c.borderStrong}` }}
           >
             <div style={{
               width: 38, height: 38, borderRadius: 10,

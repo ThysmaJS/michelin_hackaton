@@ -52,7 +52,7 @@ export default function WizardSteps() {
           as="button"
           onClick={actions.prevStep}
           style={{ background: 'transparent', border: `1px solid ${c.border}`, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '13px 22px', borderRadius: 999, cursor: 'pointer', transition: 'all .2s' }}
-          hoverStyle={{ borderColor: c.borderStrong, color: c.ink }}
+          hoverStyle={{ border: `1px solid ${c.borderStrong}`, color: c.ink }}
         >
           ← Précédent
         </Hoverable>

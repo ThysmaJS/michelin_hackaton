@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../store/AppContext.jsx';
 import { getColors } from '../lib/theme.js';
 import { tyres, regions, regionRoutes, gRoute, gGravel } from '../lib/data.js';
 import { routeDetails } from '../lib/guideData.js';
 import { optimalTyreForRoute } from '../lib/recommend.js';
 import Hoverable from '../components/Hoverable.jsx';
+import RouteMap from '../components/guide/RouteMap.jsx';
 
 // Computed once — static catalogue data doesn't change at runtime
 const ALL_ROUTES = (() => {
@@ -21,9 +22,9 @@ const ALL_ROUTES = (() => {
 })();
 
 const SEGMENT_DOT = {
-  depart:  { bg: '#27509b', border: '#27509b', label: 'Départ' },
+  depart:  { bg: '#16a34a', border: '#16a34a', label: 'Départ' },
   sommet:  { bg: '#e63946', border: '#e63946', label: 'Sommet' },
-  arrivee: { bg: '#00205B', border: '#00205B', label: 'Arrivée' },
+  arrivee: { bg: '#f97316', border: '#f97316', label: 'Arrivée' },
   cle:     { bg: '#FCE500', border: '#c9b800', label: 'Point clé' },
   descente:{ bg: '#84BD00', border: '#6a9700', label: 'Descente' },
 };
@@ -71,10 +72,11 @@ function SegmentTimeline({ segments, c }) {
   );
 }
 
-function RouteDetail({ route, c }) {
+function RouteDetail({ route, c, onScrollToMap }) {
   const details = routeDetails[route.title];
   const tyreKey = details?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
+  const hasWaypoints = details?.waypoints?.length > 0;
 
   return (
     <div style={{ borderRadius: 20, overflow: 'hidden', border: `1px solid ${c.border}`, animation: 'fadeIn .3s ease both' }}>
@@ -92,6 +94,25 @@ function RouteDetail({ route, c }) {
 
       {/* Body */}
       <div style={{ padding: '28px 32px', background: c.panel }}>
+        {/* Scroll-to-map button — top of body */}
+        {hasWaypoints && onScrollToMap && (
+          <Hoverable
+            as="button"
+            onClick={onScrollToMap}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 22,
+              padding: '9px 16px', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+              border: `1.5px solid ${c.border}`, borderRadius: 10,
+              background: 'transparent', color: c.inkMuted, cursor: 'pointer', transition: 'all .2s',
+            }}
+            hoverStyle={{ border: '1.5px solid #27509b', color: '#27509b', background: 'rgba(39,80,155,.06)' }}
+          >
+            <span style={{ fontSize: 15 }}>🗺</span>
+            Voir le tracé sur la carte
+            <span style={{ opacity: 0.5 }}>↓</span>
+          </Hoverable>
+        )}
+
         {/* Info chips */}
         {details && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -158,7 +179,7 @@ function RouteListCard({ route, isActive, onClick, c }) {
         cursor: 'pointer',
         transition: 'border-color .2s, background .2s',
       }}
-      hoverStyle={{ borderColor: isActive ? '#FCE500' : c.borderStrong }}
+      hoverStyle={{ border: `1.5px solid ${isActive ? '#FCE500' : c.borderStrong}` }}
     >
       {/* Left: gradient thumb */}
       <div style={{ width: 48, height: 48, borderRadius: 10, background: route.img, flexShrink: 0, overflow: 'hidden', border: `1px solid ${c.border}` }} />
@@ -193,6 +214,9 @@ export default function GuidePage() {
       ? ALL_ROUTES.find((r) => r.title === state.guideSelectedTitle)
       : null) || ALL_ROUTES[0] || null
   );
+
+  const mapSectionRef = useRef(null);
+  const scrollToMap = () => mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
@@ -290,10 +314,16 @@ export default function GuidePage() {
       </div>
 
       {/* Main content: list + detail */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px 80px', display: 'grid', gridTemplateColumns: '380px 1fr', gap: 28, alignItems: 'start' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px 40px', display: 'grid', gridTemplateColumns: '380px 1fr', gap: 28, alignItems: 'start' }}>
 
-        {/* Left: route list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* Left: scrollable route list */}
+        <div style={{
+          position: 'sticky', top: 140,
+          display: 'flex', flexDirection: 'column', gap: 10,
+          height: 'calc(100vh - 156px)',
+          overflowY: 'auto',
+          paddingRight: 6,
+        }}>
           {filtered.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: c.inkMuted, fontSize: 14 }}>
               Aucun parcours pour ces filtres.
@@ -312,9 +342,9 @@ export default function GuidePage() {
         </div>
 
         {/* Right: sticky detail */}
-        <div style={{ position: 'sticky', top: 144 }}>
+        <div style={{ position: 'sticky', top: 140 }}>
           {selectedRoute ? (
-            <RouteDetail route={selectedRoute} c={c} />
+            <RouteDetail key={selectedRoute.title} route={selectedRoute} c={c} onScrollToMap={routeDetails[selectedRoute.title]?.waypoints ? scrollToMap : null} />
           ) : (
             <div style={{ borderRadius: 20, border: `1px dashed ${c.border}`, padding: '80px 40px', textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: 16 }}>★</div>
@@ -323,6 +353,36 @@ export default function GuidePage() {
           )}
         </div>
       </div>
+
+      {/* Route map section — full width, always visible when a route with waypoints is selected */}
+      {selectedRoute && routeDetails[selectedRoute.title]?.waypoints && (
+        <div ref={mapSectionRef} style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px 80px' }}>
+          <div style={{ borderRadius: 20, overflow: 'hidden', border: `1px solid ${c.border}` }}>
+            {/* Map header */}
+            <div style={{ padding: '20px 28px', background: c.panel, borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontSize: 20 }}>🗺</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 16, fontWeight: 900, color: c.ink }}>Tracé · {selectedRoute.title}</div>
+                <div style={{ fontSize: 12, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>{selectedRoute.loc} · {selectedRoute.distance}</div>
+              </div>
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                {[['Départ', '#16a34a'], ['Point clé', '#FCE500'], ['Sommet', '#e63946'], ['Arrivée', '#f97316']].map(([label, color]) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: c.inkFaint }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, border: '2px solid #fff', boxShadow: '0 0 0 1px rgba(0,0,0,.18)', flexShrink: 0 }} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <RouteMap
+              waypoints={routeDetails[selectedRoute.title].waypoints}
+              segments={routeDetails[selectedRoute.title].segments}
+              height={420}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

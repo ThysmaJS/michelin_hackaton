@@ -17,7 +17,7 @@ export default function RouteStep() {
             as="button"
             onClick={() => actions.setRoute(label)}
             style={{ position: 'relative', textAlign: 'left', background: sel ? c.panel2 : c.field, border: `1.5px solid ${sel ? '#FCE500' : c.fieldBorder}`, borderRadius: 16, padding: 18, cursor: 'pointer', fontFamily: 'inherit', overflow: 'hidden', transition: 'all .2s' }}
-            hoverStyle={{ borderColor: '#27509b' }}
+            hoverStyle={{ border: '1.5px solid #27509b' }}
           >
             <span style={{ position: 'absolute', right: -10, top: -10, width: 70, height: 70, borderRadius: '50%', background: sel ? 'rgba(252,229,0,.18)' : c.chip }} />
             <span style={{ fontSize: 26 }}>{icon}</span>

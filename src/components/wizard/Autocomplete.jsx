@@ -15,7 +15,7 @@ export default function Autocomplete({ c, value, onChange, onFocus, placeholder,
         placeholder={placeholder}
         autoComplete="off"
         style={{ width: '100%', fontFamily: 'inherit', fontSize: 17, fontWeight: 600, color: c.ink, background: c.field, border: `1.5px solid ${c.fieldBorder}`, borderRadius: 14, padding: '17px 18px', outline: 'none', transition: 'border-color .2s' }}
-        focusStyle={{ borderColor: '#27509b' }}
+        focusStyle={{ border: '1.5px solid #27509b' }}
       />
       {open && (
         <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 20, background: c.menuBg, border: `1px solid ${c.borderStrong}`, borderRadius: 14, padding: 6, boxShadow: '0 18px 44px rgba(0,0,0,.28)', animation: 'fadeSlide .2s ease both', maxHeight: 280, overflow: 'auto' }}>

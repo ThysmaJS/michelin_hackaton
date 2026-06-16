@@ -36,7 +36,7 @@ export default function Buy() {
                 onChange={actions.onPostalChange}
                 placeholder="Code postal ou ville"
                 style={{ flex: 1, fontFamily: 'inherit', fontSize: 16, fontWeight: 600, color: c.ink, background: c.panel, border: `1.5px solid ${c.fieldBorder}`, borderRadius: 14, padding: '15px 18px', outline: 'none', transition: 'border-color .2s' }}
-                focusStyle={{ borderColor: '#27509b' }}
+                focusStyle={{ border: '1.5px solid #27509b' }}
               />
               <Hoverable
                 as="button"

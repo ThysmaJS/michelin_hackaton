@@ -22,7 +22,7 @@ export default function RouteCard({ c, route, reco, onSelect }) {
       as="article"
       onClick={onSelect}
       style={{ background: c.panel, border: `1px solid ${c.border}`, borderRadius: 18, overflow: 'hidden', cursor: 'pointer', transition: 'transform .25s, border-color .25s' }}
-      hoverStyle={{ transform: 'translateY(-6px)', borderColor: c.borderStrong }}
+      hoverStyle={{ transform: 'translateY(-6px)', border: `1px solid ${c.borderStrong}` }}
     >
       <div style={{ position: 'relative', aspectRatio: '16/11', background: route.img, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 40%,rgba(0,8,30,.7))' }} />

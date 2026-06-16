@@ -148,7 +148,7 @@ export default function Comparator() {
             as="button"
             onClick={() => scrollToId('guide')}
             style={{ background: 'transparent', color: c.ink, border: `1px solid ${c.borderStrong}`, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, padding: '12px 22px', borderRadius: 999, cursor: 'pointer' }}
-            hoverStyle={{ borderColor: '#FCE500' }}
+            hoverStyle={{ border: '1px solid #FCE500' }}
           >
             Voir les parcours adaptés →
           </Hoverable>

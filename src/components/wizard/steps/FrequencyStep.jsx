@@ -17,7 +17,7 @@ export default function FrequencyStep() {
             as="button"
             onClick={() => actions.setFreq(label)}
             style={{ display: 'flex', alignItems: 'center', gap: 16, textAlign: 'left', background: sel ? c.panel2 : c.field, border: `1.5px solid ${sel ? '#FCE500' : c.fieldBorder}`, borderRadius: 14, padding: '16px 18px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
-            hoverStyle={{ borderColor: '#27509b' }}
+            hoverStyle={{ border: '1.5px solid #27509b' }}
           >
             <span style={{ fontSize: 24 }}>{icon}</span>
             <span style={{ flex: 1 }}>
