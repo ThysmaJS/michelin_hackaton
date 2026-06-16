@@ -21,6 +21,17 @@ function Bar({ c, label, val, pct, fill, valInk, flag }) {
   );
 }
 
+const WIN_GREEN = '#84BD00';
+const LOSE_RED = '#E12B2B';
+
+// Compare a tyre's metric against the opposite tyre: better → green ▲, worse → red ▼,
+// equal → neutral.
+function compareMetric(mine, other, c) {
+  if (mine > other) return { valInk: WIN_GREEN, flag: '▲' };
+  if (mine < other) return { valInk: LOSE_RED, flag: '▼' };
+  return { valInk: c.ink, flag: '' };
+}
+
 function Stat({ c, label, value }) {
   return (
     <div>
@@ -122,9 +133,9 @@ export default function Comparator() {
               </div>
             </div>
             {metricDefs.map(([label, key]) => {
-              const win = rightT[key] > leftT[key];
+              const { valInk, flag } = compareMetric(rightT[key], leftT[key], c);
               return (
-                <Bar key={key} c={c} label={label} val={rightT[key]} pct={`${rightT[key]}%`} fill={c.blue} valInk={win ? '#84BD00' : c.ink} flag={win ? '▲' : ''} />
+                <Bar key={key} c={c} label={label} val={rightT[key]} pct={`${rightT[key]}%`} fill={c.blue} valInk={valInk} flag={flag} />
               );
             })}
             <Stats c={c} tyre={rightT} />

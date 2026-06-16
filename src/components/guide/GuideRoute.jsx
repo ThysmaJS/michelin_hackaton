@@ -1,7 +1,7 @@
 import { useApp } from '../../store/AppContext.jsx';
 import { getColors } from '../../lib/theme.js';
 import { tyres, competitors, regions, regionRoutes, gRoute, gGravel } from '../../lib/data.js';
-import { postalToRegion } from '../../lib/recommend.js';
+import { postalToRegion, optimalTyreForRoute } from '../../lib/recommend.js';
 import Hoverable from '../Hoverable.jsx';
 import RouteCard from './RouteCard.jsx';
 
@@ -11,8 +11,10 @@ export default function GuideRoute() {
   const { state, actions } = useApp();
   const c = getColors(state.theme);
 
-  const leftT = ALL[state.compareLeft] || tyres['power-road'];
-  const terrain = leftT.terrain || 'route';
+  const selectedKey = state.compareLeft;
+  const selectedT = ALL[selectedKey] || tyres['power-road'];
+  const isMichelin = !!tyres[selectedKey];
+  const terrain = selectedT.terrain || 'route';
 
   const detected = postalToRegion(state.postal);
   const regionKey = state.guideRegion || detected || 'aura';
@@ -24,12 +26,24 @@ export default function GuideRoute() {
   rawRoutes.sort((a, b) => (a.t === terrain ? 0 : 1) - (b.t === terrain ? 0 : 1));
   let ri = 0;
   let gi = 0;
-  const guideRoutes = rawRoutes.map((r) => ({
-    title: r.title, region: r.loc, distance: r.distance, surface: r.surface, stars: r.stars, blurb: r.blurb,
-    img: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
-  }));
+  const guideRoutes = rawRoutes.map((r) => {
+    const michelin = tyres[optimalTyreForRoute(r)];
+    return {
+      title: r.title, region: r.loc, distance: r.distance, surface: r.surface, stars: r.stars, blurb: r.blurb,
+      img: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
+      // Pneu Michelin optimal pour ce parcours (toujours calculé).
+      michelinName: michelin.name,
+      // Concurrent sélectionné → on propose le pneu Michelin optimal.
+      // Michelin sélectionné → on signale les parcours qui correspondent à ce pneu.
+      reco: isMichelin
+        ? (r.t === terrain ? { kind: 'match', label: `Idéal pour votre ${selectedT.name}` } : null)
+        : { kind: 'michelin', label: `Michelin optimal · ${michelin.name}` },
+    };
+  });
 
-  const guideIntro = `Sélection éditoriale de parcours d'exception, à la manière du Guide Michelin — autour de ${regionObj.label}, choisis pour révéler tout le potentiel de votre ${leftT.name}.`;
+  const guideIntro = isMichelin
+    ? `Sélection éditoriale de parcours d'exception, à la manière du Guide Michelin — autour de ${regionObj.label}, choisis pour révéler tout le potentiel de votre ${selectedT.name}.`
+    : `Vous roulez en ${selectedT.brand} ${selectedT.name}. Voici les plus beaux parcours autour de ${regionObj.label} — et, pour chacun, le pneu Michelin qui l'exploite au mieux.`;
 
   return (
     <section id="guide" style={{ position: 'relative', padding: '96px 32px', background: c.sectionA, transition: 'background .5s ease' }}>
@@ -55,7 +69,7 @@ export default function GuideRoute() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22, marginTop: 36 }}>
-          {guideRoutes.map((r) => <RouteCard key={r.title} c={c} route={r} />)}
+          {guideRoutes.map((r) => <RouteCard key={r.title} c={c} route={r} reco={r.reco} />)}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 44 }}>
@@ -66,7 +80,7 @@ export default function GuideRoute() {
           >
             Découvrir le Guide Route complet →
           </Hoverable>
-          <p style={{ margin: '14px 0 0', fontSize: 12, color: c.inkFaint }}>Parcours sélectionnés pour votre {leftT.name} · page dédiée à venir</p>
+          <p style={{ margin: '14px 0 0', fontSize: 12, color: c.inkFaint }}>Parcours sélectionnés pour votre {selectedT.name} · page dédiée à venir</p>
         </div>
       </div>
     </section>

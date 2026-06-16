@@ -15,6 +15,25 @@ export function recommend({ route, freq }) {
   return 'power-road';
 }
 
+/**
+ * Pneu Michelin optimal pour un parcours donné, d'après son terrain (route/gravel)
+ * et les mots-clés de surface (pavés, cols, littoral, vignes…).
+ * @returns {string} clé d'un pneu de `tyres`
+ */
+export function optimalTyreForRoute(route) {
+  const s = (route.surface || '').toLowerCase();
+  if (route.t === 'gravel') {
+    // surfaces roulantes/damées → Adventure ; sinon Gravel polyvalent
+    if (/vigne|pinède|pinede|ocre/.test(s)) return 'power-adventure';
+    return 'power-gravel';
+  }
+  // route
+  if (/pavé|pave/.test(s)) return 'power-all-season';            // pavés → robustesse
+  if (/littoral|granit|cap/.test(s)) return 'power-all-season';  // côtier/humide → adhérence
+  if (/col|géant|geant|gorge/.test(s)) return 'power-cup';       // cols & descentes → compétition
+  return 'power-road';                                           // plat roulant → performance
+}
+
 const departmentMap = {
   aura: ['69', '01', '03', '07', '15', '26', '38', '42', '43', '63', '73', '74'],
   paca: ['04', '05', '06', '13', '83', '84'],

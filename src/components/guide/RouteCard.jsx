@@ -1,6 +1,22 @@
 import Hoverable from '../Hoverable.jsx';
 
-export default function RouteCard({ c, route }) {
+// Bandeau de recommandation affiché en bas de carte :
+// - kind 'michelin' (concurrent sélectionné) → pneu Michelin optimal, accent jaune
+// - kind 'match'    (Michelin sélectionné)   → parcours adapté au pneu, accent vert
+function RecoStrip({ c, reco }) {
+  if (!reco) return null;
+  const michelin = reco.kind === 'michelin';
+  const accent = michelin ? '#FCE500' : '#84BD00';
+  const icon = michelin ? '🏅' : '✓';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '9px 12px', borderRadius: 10, background: c.chip, border: `1px solid ${c.border}`, borderLeft: `3px solid ${accent}` }}>
+      <span style={{ fontSize: 13, lineHeight: 1 }}>{icon}</span>
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: c.ink }}>{reco.label}</span>
+    </div>
+  );
+}
+
+export default function RouteCard({ c, route, reco }) {
   return (
     <Hoverable
       as="article"
@@ -17,6 +33,7 @@ export default function RouteCard({ c, route }) {
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', color: c.inkFaint, textTransform: 'uppercase' }}>{route.region} · {route.distance}</div>
         <h3 style={{ margin: '7px 0 10px', fontSize: 21, fontWeight: 900, letterSpacing: '-.01em', color: c.ink }}>{route.title}</h3>
         <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: c.inkMuted }}>{route.blurb}</p>
+        <RecoStrip c={c} reco={reco} />
       </div>
     </Hoverable>
   );
