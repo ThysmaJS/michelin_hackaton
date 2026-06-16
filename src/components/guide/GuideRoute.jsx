@@ -70,18 +70,19 @@ export default function GuideRoute() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22, marginTop: 36 }}>
-          {guideRoutes.map((r) => <RouteCard key={r.title} c={c} route={r} reco={r.reco} />)}
+          {guideRoutes.map((r) => <RouteCard key={r.title} c={c} route={r} reco={r.reco} onSelect={() => actions.navigateToRoute(r.title)} />)}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 44 }}>
           <Hoverable
             as="button"
+            onClick={() => actions.navigate('guide')}
             style={{ background: '#FCE500', color: '#00205B', border: 0, fontFamily: 'inherit', fontWeight: 800, fontSize: 16, padding: '17px 34px', borderRadius: 999, cursor: 'pointer', boxShadow: '0 10px 28px rgba(252,229,0,.28)', transition: 'transform .2s' }}
             hoverStyle={{ transform: 'translateY(-3px)' }}
           >
             Découvrir le Guide Route complet →
           </Hoverable>
-          <p style={{ margin: '14px 0 0', fontSize: 12, color: c.inkFaint }}>Parcours sélectionnés pour votre {selectedT.name} · page dédiée à venir</p>
+          <p style={{ margin: '14px 0 0', fontSize: 12, color: c.inkFaint }}>18 parcours sélectionnés · segments détaillés · pneu recommandé</p>
         </div>
       </div>
     </section>

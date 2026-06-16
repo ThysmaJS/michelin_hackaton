@@ -7,6 +7,7 @@ import Comparator from './components/comparator/Comparator.jsx';
 import GuideRoute from './components/guide/GuideRoute.jsx';
 import Buy from './components/buy/Buy.jsx';
 import Footer from './components/Footer.jsx';
+import GuidePage from './pages/GuidePage.jsx';
 
 export default function App() {
   const { state } = useApp();
@@ -15,12 +16,18 @@ export default function App() {
   return (
     <div style={{ fontFamily: "'Noto Sans',system-ui,sans-serif", minHeight: '100vh', overflowX: 'hidden', background: c.pageBg, color: c.ink, transition: 'background .5s ease,color .5s ease' }}>
       <Header />
-      <Hero />
-      <Wizard />
-      <Comparator />
-      <GuideRoute />
-      <Buy />
-      <Footer />
+      {state.page === 'guide' ? (
+        <GuidePage />
+      ) : (
+        <>
+          <Hero />
+          <Wizard />
+          <Comparator />
+          <GuideRoute />
+          <Buy />
+          <Footer />
+        </>
+      )}
     </div>
   );
 }

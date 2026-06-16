@@ -3,6 +3,7 @@ import { recommend } from '../lib/recommend.js';
 
 const initialState = {
   theme: 'editorial',
+  page: 'home',
   started: false,
   step: 0, // 0..5 questions, 6 = results
   marque: '', marqueQuery: '', marqueFocus: false,
@@ -14,6 +15,7 @@ const initialState = {
   compareRight: 'continental-gp5000',
   postal: '', searched: false,
   guideRegion: '',
+  guideSelectedTitle: null,
 };
 
 function canAdvance(state) {
@@ -65,6 +67,9 @@ function reducer(state, action) {
     case 'TOGGLE_THEME':
       return { ...state, theme: state.theme === 'immersive' ? 'editorial' : 'immersive' };
 
+    case 'NAVIGATE':
+      return { ...state, page: action.page, guideSelectedTitle: action.selectedTitle ?? null };
+
     default:
       return state;
   }
@@ -105,6 +110,9 @@ export function AppProvider({ children }) {
     setFreq: (v) => patch({ freq: v }),
     setRoute: (v) => patch({ route: v }),
     onKmChange: (e) => patch({ km: parseInt(e.target.value, 10) }),
+
+    navigate: (page) => dispatch({ type: 'NAVIGATE', page }),
+    navigateToRoute: (title) => dispatch({ type: 'NAVIGATE', page: 'guide', selectedTitle: title }),
 
     // comparator
     onCompareLeftChange: (e) => patch({ compareLeft: e.target.value }),

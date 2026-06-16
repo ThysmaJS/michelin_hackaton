@@ -16,10 +16,11 @@ function RecoStrip({ c, reco }) {
   );
 }
 
-export default function RouteCard({ c, route, reco }) {
+export default function RouteCard({ c, route, reco, onSelect }) {
   return (
     <Hoverable
       as="article"
+      onClick={onSelect}
       style={{ background: c.panel, border: `1px solid ${c.border}`, borderRadius: 18, overflow: 'hidden', cursor: 'pointer', transition: 'transform .25s, border-color .25s' }}
       hoverStyle={{ transform: 'translateY(-6px)', borderColor: c.borderStrong }}
     >

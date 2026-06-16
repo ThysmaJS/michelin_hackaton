@@ -4,10 +4,9 @@ import { tyres } from '../lib/data.js';
 import { scrollToId, scrollToTop } from '../lib/scroll.js';
 import Hoverable from './Hoverable.jsx';
 
-const NAV_ITEMS = [
+const HOME_NAV = [
   { label: 'Trouver mon pneu', target: 'wizard' },
   { label: 'Comparateur', target: 'compare' },
-  { label: 'Guide Route', target: 'guide' },
   { label: 'Acheter', target: 'buy' },
 ];
 
@@ -27,6 +26,7 @@ export default function Header() {
   const { state, actions } = useApp();
   const c = getColors(state.theme);
   const im = state.theme === 'immersive';
+  const onGuide = state.page === 'guide';
   const hasReco = !!state.recommended;
   const recoShortName = tyres[state.recommended || 'power-road'].name;
 
@@ -36,21 +36,42 @@ export default function Header() {
         <Logo c={c} />
 
         <nav style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
-          {NAV_ITEMS.map((item) => (
+          {onGuide ? (
             <Hoverable
-              key={item.target}
               as="button"
-              onClick={() => scrollToId(item.target)}
-              style={{ background: 'transparent', border: 0, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', transition: 'color .2s,background .2s' }}
+              onClick={() => actions.navigate('home')}
+              style={{ background: 'transparent', border: 0, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', transition: 'color .2s,background .2s', display: 'flex', alignItems: 'center', gap: 6 }}
               hoverStyle={{ background: c.chip, color: c.ink }}
             >
-              {item.label}
+              ← Retour à l'accueil
             </Hoverable>
-          ))}
+          ) : (
+            <>
+              {HOME_NAV.map((item) => (
+                <Hoverable
+                  key={item.target}
+                  as="button"
+                  onClick={() => scrollToId(item.target)}
+                  style={{ background: 'transparent', border: 0, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', transition: 'color .2s,background .2s' }}
+                  hoverStyle={{ background: c.chip, color: c.ink }}
+                >
+                  {item.label}
+                </Hoverable>
+              ))}
+              <Hoverable
+                as="button"
+                onClick={() => actions.navigate('guide')}
+                style={{ background: 'transparent', border: 0, color: '#FCE500', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', transition: 'color .2s,background .2s', display: 'flex', alignItems: 'center', gap: 5 }}
+                hoverStyle={{ background: c.chip }}
+              >
+                ★ Guide Michelin
+              </Hoverable>
+            </>
+          )}
         </nav>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-          {hasReco && (
+          {!onGuide && hasReco && (
             <div onClick={() => scrollToId('compare')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: c.chip, border: `1px solid ${c.border}`, borderRadius: 999, padding: '6px 8px 6px 14px', cursor: 'pointer', animation: 'fadeIn .4s ease both' }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', color: c.inkFaint, textTransform: 'uppercase' }}>Votre pneu</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: c.ink }}>{recoShortName}</span>
