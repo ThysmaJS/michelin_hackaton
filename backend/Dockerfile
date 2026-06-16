@@ -19,6 +19,7 @@ ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY prisma ./prisma/
+COPY src ./src/
 COPY data ./data/
 
 EXPOSE 3000
