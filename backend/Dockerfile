@@ -18,6 +18,7 @@ ENV NODE_ENV=production
 # Copy full node_modules (includes devDeps) so ts-node/prisma CLI are available for Jobs
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY tsconfig*.json ./
 COPY prisma ./prisma/
 COPY src ./src/
 COPY data ./data/
