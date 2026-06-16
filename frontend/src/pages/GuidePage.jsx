@@ -128,6 +128,16 @@ function RouteDetail({ route, c, onScrollToMap }) {
         {tyre && (
           <div style={{ background: c.sectionB || c.panel2, border: `1.5px solid ${c.borderStrong}`, borderLeft: '4px solid #FCE500', borderRadius: 14, padding: '20px 22px', marginBottom: 28 }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.3em', color: '#FCE500', textTransform: 'uppercase', marginBottom: 8 }}>Pneu recommandé</div>
+            {(tyre.races?.length > 0 || tyre.proTeams?.length > 0) && (
+              <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                {tyre.races?.map((r) => (
+                  <span key={r} style={{ fontSize: 11, fontWeight: 800, color: '#FCE500', background: 'rgba(252,229,0,.1)', border: '1px solid rgba(252,229,0,.3)', borderRadius: 999, padding: '3px 9px', whiteSpace: 'nowrap' }}>🏆 {r}</span>
+                ))}
+                {tyre.proTeams?.map((team) => (
+                  <span key={team} style={{ fontSize: 11, fontWeight: 800, color: '#27509B', background: 'rgba(39,80,155,.08)', border: '1px solid rgba(39,80,155,.25)', borderRadius: 999, padding: '3px 9px', whiteSpace: 'nowrap' }}>◉ {team}</span>
+                ))}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: c.ink, letterSpacing: '-.01em' }}>{tyre.name}</div>
@@ -147,12 +157,48 @@ function RouteDetail({ route, c, onScrollToMap }) {
           </div>
         )}
 
+        {/* KOM storytelling */}
+        {details?.kom && (
+          <div style={{ background: c.panel2, border: `1.5px solid ${c.borderStrong}`, borderLeft: '4px solid #582C83', borderRadius: 14, padding: '18px 20px', marginBottom: 24 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.3em', color: '#582C83', textTransform: 'uppercase', marginBottom: 10 }}>Record · Segment principal</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-.02em', color: c.ink, lineHeight: 1 }}>{details.kom.time}</div>
+                <div style={{ fontSize: 12, color: c.inkFaint, marginTop: 3, fontWeight: 600 }}>{details.kom.holder}</div>
+              </div>
+              <div style={{ flex: 1, minWidth: 140 }}>
+                <div style={{ fontSize: 12.5, color: c.inkMuted, lineHeight: 1.6 }}>
+                  <span style={{ fontWeight: 700, color: c.ink }}>{details.kom.tyre}</span> · {details.kom.context} · {details.kom.year}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Segments */}
         {details?.segments?.length > 0 && (
           <>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.3em', color: c.inkFaint, textTransform: 'uppercase', marginBottom: 16 }}>Segments</div>
             <SegmentTimeline segments={details.segments} c={c} />
           </>
+        )}
+
+        {/* Pro Tips */}
+        {tyre?.proTips?.length > 0 && (
+          <div style={{ marginTop: 20, padding: '18px 20px', background: c.panel2, border: `1px solid ${c.border}`, borderRadius: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.3em', color: '#27509B', textTransform: 'uppercase', marginBottom: 4 }}>Pro Tips · {tyre.name}</div>
+            <div style={{ fontSize: 11, color: c.inkFaint, marginBottom: 12 }}>Ce que font les mécanos des équipes WorldTour</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {tyre.proTips.map((tip, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: 'rgba(39,80,155,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: '#27509B' }}>{i + 1}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: c.inkMuted }}>{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Blurb */}
