@@ -1,98 +1,112 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Michelin Vélo — API (backend)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST **NestJS 11 + PostgreSQL (Prisma 6)** qui alimente la landing page « Trouver mon pneu ».
+Toutes les données auparavant codées en dur dans le frontend (`data.js`, `guideData.js`,
+`recommend.js`, `scoring.js`) sont désormais servies par cette API, à partir d'une base
+seedée avec le **catalogue produit réel Michelin 2026** (Excel) et les contenus du frontend.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+| Couche            | Choix |
+|-------------------|-------|
+| Framework         | NestJS 11 |
+| Base de données   | PostgreSQL 16 (Docker) |
+| ORM               | Prisma 6 |
+| Admin BDD         | pgAdmin 4 (Docker) |
+| Validation        | class-validator / class-transformer + Joi (env) |
+| Sécurité          | Helmet, CORS restreint, rate limiting (`@nestjs/throttler`) |
+| Tests             | Jest (unitaires + e2e) |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+> ⚠️ Prisma est **épinglé en 6.x** : la 7.x supprime `url` dans `datasource` (driver adapters obligatoires).
 
-## Project setup
+## Démarrage rapide
 
 ```bash
-$ npm install
+# 1. Lancer PostgreSQL + pgAdmin
+npm run db:up
+
+# 2. Installer les dépendances
+npm install
+
+# 3. Créer le schéma de base
+npm run db:migrate
+
+# 4. Importer le catalogue + les données frontend
+npm run db:seed
+
+# 5. Démarrer l'API (http://localhost:3000/api)
+npm run start:dev
 ```
 
-## Compile and run the project
+Copier `.env.example` vers `.env` si nécessaire (valeurs de dev par défaut fournies).
 
-```bash
-# development
-$ npm run start
+> **Port 5432 déjà pris ?** Le conteneur est publié sur **5433** côté hôte (cf. `.env`) pour
+> cohabiter avec un PostgreSQL local. Adapter `POSTGRES_PORT` et `DATABASE_URL` au besoin.
 
-# watch mode
-$ npm run start:dev
+### pgAdmin
 
-# production mode
-$ npm run start:prod
+http://localhost:5050 — login `admin@michelin.local` / `admin`.
+Connexion serveur : hôte `postgres`, port `5432`, user/mdp `michelin`, base `michelin_velo`.
+
+## Scripts
+
+| Script | Rôle |
+|--------|------|
+| `npm run start:dev`   | API en watch mode |
+| `npm run db:up` / `db:down` | conteneurs Postgres + pgAdmin |
+| `npm run db:migrate`  | applique/crée les migrations Prisma |
+| `npm run db:seed`     | (ré)alimente la base (idempotent) |
+| `npm run db:reset`    | reset complet + migrations + seed |
+| `npm run db:studio`   | Prisma Studio |
+| `npm test` / `npm run test:e2e` | tests unitaires / e2e |
+| `npm run lint`        | ESLint (+ fix) |
+
+## Architecture
+
+```
+prisma/
+  schema.prisma         Modèle de données
+  seed.ts               Seed : Excel (Michelin) + frontend (concurrents, vélos, guide…)
+src/
+  prisma/               PrismaService global
+  config/               Validation des variables d'environnement (Joi)
+  common/filters/       Filtre d'exceptions global
+  tyres/                Catalogue (gammes + variantes) — domain/scoring.ts (calcul des scores)
+  bikes/                Marques & modèles (autocomplétion)
+  wizard/               Recommandation — domain/recommendation.ts (logique pure)
+  comparator/           Comparaison de 2 pneus
+  guide/                Régions & parcours du Guide
+  retailers/            Revendeurs par localisation — domain/geo.ts + geo.service.ts
+  reference/            Contenus UI (étapes, métriques, hero, footer)
 ```
 
-## Run tests
+La **logique métier pure** (scoring, recommandation, géo) est isolée dans des fichiers
+`domain/` sans dépendance framework, et couverte par des tests unitaires.
 
-```bash
-# unit tests
-$ npm run test
+### Sources de données & scores
 
-# e2e tests
-$ npm run test:e2e
+- **Catalogue Michelin** : importé de l'Excel `data/` (441 SKU → ~96 gammes + variantes).
+  Les 4 scores radar sont **calculés** par `deriveScores()` à partir des attributs réels
+  (usage, gomme, poids, segment, renfort).
+- **Gammes vitrines** (présentes dans le frontend) : scores curatés du frontend + statut actif.
+- **Concurrents, vélos, parcours, revendeurs, contenus UI** : seedés depuis le frontend.
 
-# test coverage
-$ npm run test:cov
-```
+## Endpoints principaux (préfixe `/api`)
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Méthode & route | Description |
+|-----------------|-------------|
+| `GET /api` | Health check (état + base) |
+| `GET /tyres?terrain=&brand=&search=&includeDiscontinued=` | Liste des gammes |
+| `GET /tyres/competitors` | Gammes concurrentes |
+| `GET /tyres/:slug` | Détail d'une gamme (+ variantes) |
+| `GET /bikes/brands?search=` | Marques (autocomplétion) |
+| `GET /bikes/brands/:slug/models?search=` | Modèles d'une marque |
+| `GET /bikes/models/generic` | Modèles génériques |
+| `POST /wizard/recommend` | Pneu recommandé `{ route, freq, … }` |
+| `GET /comparator?left=&right=` | Comparaison de 2 pneus |
+| `GET /guide/regions` | Régions |
+| `GET /guide/regions/:key/routes` | Parcours d'une région |
+| `GET /guide/routes?tyre=` | Parcours recommandant un pneu |
+| `GET /guide/routes/:title` | Détail d'un parcours |
+| `GET /retailers?postal=&tyre=` | Revendeurs proches |
+| `GET /reference/wizard \| metrics \| hero \| footer` | Contenus UI |
