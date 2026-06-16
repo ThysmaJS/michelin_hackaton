@@ -27,16 +27,17 @@ export default function GuideRoute() {
   let ri = 0;
   let gi = 0;
   const guideRoutes = rawRoutes.map((r) => {
-    const michelin = tyres[optimalTyreForRoute(r)];
+    const optimalKey = optimalTyreForRoute(r);
+    const michelin = tyres[optimalKey];
+    // Pneu Michelin sélectionné ET déjà optimal pour ce parcours → bandeau vert « idéal ».
+    // Sinon (Michelin non optimal, ou concurrent sélectionné) → on propose le pneu
+    // Michelin le plus adéquat pour ce parcours.
+    const isOptimal = isMichelin && selectedKey === optimalKey;
     return {
       title: r.title, region: r.loc, distance: r.distance, surface: r.surface, stars: r.stars, blurb: r.blurb,
       img: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
-      // Pneu Michelin optimal pour ce parcours (toujours calculé).
-      michelinName: michelin.name,
-      // Concurrent sélectionné → on propose le pneu Michelin optimal.
-      // Michelin sélectionné → on signale les parcours qui correspondent à ce pneu.
-      reco: isMichelin
-        ? (r.t === terrain ? { kind: 'match', label: `Idéal pour votre ${selectedT.name}` } : null)
+      reco: isOptimal
+        ? { kind: 'match', label: `Idéal pour votre ${selectedT.name}` }
         : { kind: 'michelin', label: `Michelin optimal · ${michelin.name}` },
     };
   });
