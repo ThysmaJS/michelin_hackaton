@@ -86,8 +86,8 @@ jobs:
           DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
           sed -i "s|deploy-sha:.*|deploy-sha: \"$SHORT ($DATE)\"|g" \
-            gitops/apps/michelin/backend/deployment.yaml \
-            gitops/apps/michelin/frontend/deployment.yaml
+            gitops/apps/michelin/backend.yaml \
+            gitops/apps/michelin/frontend.yaml
 
       - name: Commit and push
         run: |
