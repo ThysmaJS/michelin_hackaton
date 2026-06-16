@@ -8,16 +8,20 @@ import CurrentTyreStep from './steps/CurrentTyreStep.jsx';
 import FrequencyStep from './steps/FrequencyStep.jsx';
 import RouteStep from './steps/RouteStep.jsx';
 import MileageStep from './steps/MileageStep.jsx';
+import AdvancedStep from './steps/AdvancedStep.jsx';
 
-const STEP_COMPONENTS = [BrandStep, ModelStep, CurrentTyreStep, FrequencyStep, RouteStep, MileageStep];
+const STEP_COMPONENTS = [BrandStep, ModelStep, CurrentTyreStep, FrequencyStep, RouteStep, MileageStep, AdvancedStep];
+
+const ADVANCED_STEP = 6;
 
 export default function WizardSteps() {
   const { state, actions, canAdvance } = useApp();
   const c = getColors(state.theme);
 
-  const meta = stepMeta[Math.min(state.step, 5)];
-  const StepBody = STEP_COMPONENTS[Math.min(state.step, 5)];
-  const onLast = state.step === 5;
+  const isAdvanced = state.step === ADVANCED_STEP;
+  const meta = stepMeta[Math.min(state.step, ADVANCED_STEP)];
+  const StepBody = STEP_COMPONENTS[Math.min(state.step, ADVANCED_STEP)];
+  const onLast = state.step === ADVANCED_STEP;
   const nextLabel = onLast ? 'Voir ma recommandation →' : 'Suivant →';
 
   return (
@@ -26,7 +30,13 @@ export default function WizardSteps() {
       <div style={{ padding: '26px 40px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.04em', color: '#FCE500', background: 'rgba(252,229,0,.12)', border: '1px solid rgba(252,229,0,.3)', padding: '4px 10px', borderRadius: 999 }}>{meta.block}</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: c.inkFaint }}>{`Question ${state.step + 1} / 6`}</span>
+          {isAdvanced ? (
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#84BD00', background: 'rgba(132,189,0,.1)', border: '1px solid rgba(132,189,0,.3)', padding: '4px 10px', borderRadius: 999 }}>
+              Optionnel
+            </span>
+          ) : (
+            <span style={{ fontSize: 13, fontWeight: 700, color: c.inkFaint }}>{`Question ${state.step + 1} / 6`}</span>
+          )}
         </div>
         <Hoverable
           as="button"
@@ -56,12 +66,26 @@ export default function WizardSteps() {
         >
           ← Précédent
         </Hoverable>
-        <button
-          onClick={actions.nextStep}
-          style={{ background: canAdvance ? '#FCE500' : c.field, color: canAdvance ? '#00205B' : c.inkFaint, border: 0, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, padding: '14px 30px', borderRadius: 999, cursor: canAdvance ? 'pointer' : 'not-allowed', opacity: canAdvance ? 1 : 0.6, boxShadow: canAdvance ? '0 8px 20px rgba(252,229,0,.28)' : 'none', transition: 'all .2s' }}
-        >
-          {nextLabel}
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Skip link on the advanced step */}
+          {isAdvanced && (
+            <Hoverable
+              as="button"
+              onClick={actions.nextStep}
+              style={{ background: 'transparent', border: 0, color: c.inkFaint, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '13px 4px' }}
+              hoverStyle={{ color: c.ink }}
+            >
+              Passer →
+            </Hoverable>
+          )}
+          <button
+            onClick={actions.nextStep}
+            style={{ background: canAdvance ? '#FCE500' : c.field, color: canAdvance ? '#00205B' : c.inkFaint, border: 0, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, padding: '14px 30px', borderRadius: 999, cursor: canAdvance ? 'pointer' : 'not-allowed', opacity: canAdvance ? 1 : 0.6, boxShadow: canAdvance ? '0 8px 20px rgba(252,229,0,.28)' : 'none', transition: 'all .2s' }}
+          >
+            {nextLabel}
+          </button>
+        </div>
       </div>
     </div>
   );

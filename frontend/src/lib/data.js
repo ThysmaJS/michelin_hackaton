@@ -171,4 +171,5 @@ export const stepMeta = [
   { block: '🛣 Mon usage', title: 'À quelle fréquence roulez-vous ?', hint: 'Votre rythme oriente le choix de la gomme.' },
   { block: '🛣 Mon usage', title: 'Sur quel type de routes ?', hint: 'Le terrain est le critère le plus déterminant.' },
   { block: '🛣 Mon usage', title: 'Votre kilométrage mensuel ?', hint: 'Une estimation suffit.' },
+  { block: '⚡ Mon profil', title: 'Affinez votre recommandation', hint: 'Optionnel — renseignez ces données pour une sélection encore plus précise, ou passez directement à la reco.' },
 ];

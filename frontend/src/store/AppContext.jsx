@@ -10,6 +10,11 @@ const initialState = {
   modele: '', modeleQuery: '', modeleFocus: false,
   currentTyre: '',
   freq: '', route: '', km: 200,
+  // Advanced profiling (optional step 6)
+  riderWeight: 75,  // kg, slider 50-130
+  bikeWeight: 8,    // kg, slider 4-15
+  rimWidth: 19,     // mm internal width: 15 | 17 | 19 | 21 | 25
+  ftp: null,        // W (number) or null = not known
   recommended: null,
   compareLeft: 'power-road',
   compareRight: 'continental-gp5000',
@@ -25,7 +30,8 @@ function canAdvance(state) {
     case 2: return !!state.currentTyre;
     case 3: return !!state.freq;
     case 4: return !!state.route;
-    case 5: return true;
+    case 5: return true; // km is always valid
+    case 6: return true; // advanced step is optional
     default: return false;
   }
 }
@@ -42,19 +48,22 @@ function reducer(state, action) {
       return {
         ...state, started: false, step: 0,
         marque: '', marqueQuery: '', modele: '', modeleQuery: '',
-        currentTyre: '', freq: '', route: '', km: 200, recommended: null,
+        currentTyre: '', freq: '', route: '', km: 200,
+        riderWeight: 75, bikeWeight: 8, rimWidth: 19, ftp: null,
+        recommended: null,
       };
 
     case 'NEXT_STEP': {
       if (!canAdvance(state)) return state;
-      if (state.step < 5) return { ...state, step: state.step + 1 };
+      if (state.step < 6) return { ...state, step: state.step + 1 };
+      // step 6 (advanced, optional) → compute recommendation → results at step 7
       const rec = recommend(state);
-      return { ...state, recommended: rec, compareLeft: rec, step: 6 };
+      return { ...state, recommended: rec, compareLeft: rec, step: 7 };
     }
 
     case 'PREV_STEP': {
       if (state.step === 0) return { ...state, started: false };
-      if (state.step === 6) return { ...state, step: 5 };
+      if (state.step === 7) return { ...state, step: 6 };
       return { ...state, step: state.step - 1 };
     }
 

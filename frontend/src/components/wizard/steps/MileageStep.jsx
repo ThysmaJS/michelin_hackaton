@@ -2,7 +2,7 @@ import { useApp } from '../../../store/AppContext.jsx';
 import { getColors } from '../../../lib/theme.js';
 
 function kmProfile(km) {
-  if (km < 80) return 'loisir';
+  if (km < 80)  return 'loisir';
   if (km < 250) return 'régulier';
   if (km < 500) return 'assidu';
   return 'grand rouleur';
