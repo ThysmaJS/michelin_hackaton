@@ -14,11 +14,7 @@ const HOME_NAV = [
 function Logo({ c }) {
   return (
     <div onClick={scrollToTop} style={{ display: 'flex', alignItems: 'center', gap: 11, cursor: 'pointer', userSelect: 'none' }}>
-      <img
-        src="/assets/images/michelin-14.svg"
-        alt="Michelin"
-        style={{ width: 50, height: 50, flex: '0 0 auto', display: 'block' }}
-      />
+      <img src="/assets/images/michelin-14.svg" alt="Michelin" style={{ width: 50, height: 50, flex: '0 0 auto', display: 'block' }} />
       <span style={{ fontWeight: 800, fontSize: 21, letterSpacing: '.14em', color: c.ink }}>MICHELIN</span>
       <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '.28em', color: '#FCE500', border: '1px solid #FCE500', borderRadius: 3, padding: '3px 7px' }}>VÉLO</span>
     </div>
