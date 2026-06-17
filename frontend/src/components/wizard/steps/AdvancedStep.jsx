@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApp } from '../../../store/AppContext.jsx';
 import { getColors } from '../../../lib/theme.js';
 import { calcPressure } from '../../../lib/recommend.js';
+import useBreakpoint from '../../../hooks/useBreakpoint.js';
 import Hoverable from '../../Hoverable.jsx';
 
 // Internal rim width presets with ETRTO-compatible tire ranges
@@ -17,23 +18,23 @@ function PressureCard({ riderKg, bikeKg, rimMm, c }) {
   const p = calcPressure(riderKg, bikeKg, rimMm);
   return (
     <div style={{
-      marginTop: 16, padding: '16px 20px', borderRadius: 14,
+      marginTop: 16, padding: '14px 16px', borderRadius: 14,
       background: c.panel2, border: `1.5px solid #FCE500`,
-      display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap',
+      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
     }}>
-      <div style={{ flex: 1, minWidth: 160 }}>
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.25em', color: '#FCE500', textTransform: 'uppercase', marginBottom: 4 }}>
+      <div style={{ flex: 1, minWidth: 120 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.2em', color: '#FCE500', textTransform: 'uppercase', marginBottom: 4 }}>
           Pression recommandée
         </div>
         <div style={{ fontSize: 11, color: c.inkFaint, lineHeight: 1.5 }}>
           Pneus {p.tireMm} mm · {p.tubeless ? 'Tubeless' : 'Chambre à air'}
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 20 }}>
+      <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
         {[['Avant', p.front], ['Arrière', p.rear]].map(([axle, val]) => (
           <div key={axle} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-.02em', color: c.ink, lineHeight: 1 }}>{val}</div>
-            <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 700, marginTop: 4 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-.02em', color: c.ink, lineHeight: 1 }}>{val}</div>
+            <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 700, marginTop: 4, whiteSpace: 'nowrap' }}>
               bar · {axle}
             </div>
           </div>
@@ -61,6 +62,7 @@ export default function AdvancedStep() {
     }
   }
 
+  const { isMobile } = useBreakpoint();
   const selectedRim = RIM_PRESETS.find((r) => r.val === state.rimWidth) ?? RIM_PRESETS[2];
 
   return (
@@ -126,7 +128,7 @@ export default function AdvancedStep() {
                 as="button"
                 onClick={() => actions.patch({ rimWidth: rim.val })}
                 style={{
-                  flex: 1, minWidth: 80, padding: '10px 10px 9px', textAlign: 'center',
+                  flex: 1, minWidth: isMobile ? 56 : 80, padding: '10px 8px 9px', textAlign: 'center',
                   background: sel ? c.panel2 : c.field,
                   border: `1.5px solid ${sel ? '#FCE500' : c.fieldBorder}`,
                   borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s',

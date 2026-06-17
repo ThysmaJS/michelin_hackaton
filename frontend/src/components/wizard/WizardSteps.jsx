@@ -1,6 +1,7 @@
 import { useApp } from '../../store/AppContext.jsx';
 import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
+import useBreakpoint from '../../hooks/useBreakpoint.js';
 import Hoverable from '../Hoverable.jsx';
 import BrandStep from './steps/BrandStep.jsx';
 import ModelStep from './steps/ModelStep.jsx';
@@ -19,16 +20,18 @@ export default function WizardSteps() {
   const { stepMeta } = useData();
   const c = getColors(state.theme);
 
+  const { isMobile } = useBreakpoint();
   const isAdvanced = state.step === ADVANCED_STEP;
   const meta = stepMeta[Math.min(state.step, ADVANCED_STEP)];
   const StepBody = STEP_COMPONENTS[Math.min(state.step, ADVANCED_STEP)];
   const onLast = state.step === ADVANCED_STEP;
   const nextLabel = onLast ? 'Voir ma recommandation →' : 'Suivant →';
+  const px = isMobile ? 18 : 40;
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* step header */}
-      <div style={{ padding: '26px 40px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: `24px ${px}px 0`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.04em', color: '#00205B', background: '#FCE500', border: '1px solid rgba(0,0,0,.08)', padding: '4px 10px', borderRadius: 999 }}>{meta.block}</span>
           {isAdvanced ? (
@@ -49,7 +52,7 @@ export default function WizardSteps() {
         </Hoverable>
       </div>
 
-      <div style={{ flex: 1, padding: '22px 40px 0' }}>
+      <div style={{ flex: 1, padding: `20px ${px}px 0` }}>
         <div>
           <h3 style={{ margin: '0 0 6px', fontSize: 26, fontWeight: 900, letterSpacing: '-.02em', color: c.ink }}>{meta.title}</h3>
           <p style={{ margin: '0 0 26px', fontSize: 15, color: c.inkMuted }}>{meta.hint}</p>
@@ -58,36 +61,64 @@ export default function WizardSteps() {
       </div>
 
       {/* nav footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '22px 40px 30px', gap: 16, marginTop: 'auto' }}>
-        <Hoverable
-          as="button"
-          onClick={actions.prevStep}
-          style={{ background: 'transparent', border: `1px solid ${c.border}`, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '13px 22px', borderRadius: 999, cursor: 'pointer', transition: 'all .2s' }}
-          hoverStyle={{ border: `1px solid ${c.borderStrong}`, color: c.ink }}
-        >
-          ← Précédent
-        </Hoverable>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Skip link on the advanced step */}
-          {isAdvanced && (
+      {isMobile && isAdvanced ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: `16px ${px}px 24px`, marginTop: 'auto' }}>
+          <button
+            onClick={actions.nextStep}
+            style={{ background: '#FCE500', color: '#00205B', border: 0, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, padding: '14px', borderRadius: 999, cursor: 'pointer', boxShadow: '0 8px 20px rgba(252,229,0,.28)', transition: 'all .2s' }}
+          >
+            {nextLabel}
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Hoverable
+              as="button"
+              onClick={actions.prevStep}
+              style={{ background: 'transparent', border: `1px solid ${c.border}`, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '11px 20px', borderRadius: 999, cursor: 'pointer', transition: 'all .2s' }}
+              hoverStyle={{ border: `1px solid ${c.borderStrong}`, color: c.ink }}
+            >
+              ← Précédent
+            </Hoverable>
             <Hoverable
               as="button"
               onClick={actions.nextStep}
-              style={{ background: 'transparent', border: 0, color: c.inkFaint, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '13px 4px' }}
+              style={{ background: 'transparent', border: 0, color: c.inkFaint, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '11px 4px' }}
               hoverStyle={{ color: c.ink }}
             >
               Passer →
             </Hoverable>
-          )}
-          <button
-            onClick={actions.nextStep}
-            style={{ background: canAdvance ? '#FCE500' : c.field, color: canAdvance ? '#00205B' : c.inkFaint, border: 0, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, padding: '14px 30px', borderRadius: 999, cursor: canAdvance ? 'pointer' : 'not-allowed', opacity: canAdvance ? 1 : 0.6, boxShadow: canAdvance ? '0 8px 20px rgba(252,229,0,.28)' : 'none', transition: 'all .2s' }}
-          >
-            {nextLabel}
-          </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `20px ${px}px 28px`, gap: 16, marginTop: 'auto' }}>
+          <Hoverable
+            as="button"
+            onClick={actions.prevStep}
+            style={{ background: 'transparent', border: `1px solid ${c.border}`, color: c.inkMuted, fontFamily: 'inherit', fontSize: 14, fontWeight: 700, padding: '13px 22px', borderRadius: 999, cursor: 'pointer', transition: 'all .2s' }}
+            hoverStyle={{ border: `1px solid ${c.borderStrong}`, color: c.ink }}
+          >
+            ← Précédent
+          </Hoverable>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {isAdvanced && (
+              <Hoverable
+                as="button"
+                onClick={actions.nextStep}
+                style={{ background: 'transparent', border: 0, color: c.inkFaint, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '13px 4px' }}
+                hoverStyle={{ color: c.ink }}
+              >
+                Passer →
+              </Hoverable>
+            )}
+            <button
+              onClick={actions.nextStep}
+              style={{ background: canAdvance ? '#FCE500' : c.field, color: canAdvance ? '#00205B' : c.inkFaint, border: 0, fontFamily: 'inherit', fontSize: 15, fontWeight: 800, padding: '14px 30px', borderRadius: 999, cursor: canAdvance ? 'pointer' : 'not-allowed', opacity: canAdvance ? 1 : 0.6, boxShadow: canAdvance ? '0 8px 20px rgba(252,229,0,.28)' : 'none', transition: 'all .2s' }}
+            >
+              {nextLabel}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

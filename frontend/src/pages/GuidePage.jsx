@@ -3,7 +3,10 @@ import { useApp } from '../store/AppContext.jsx';
 import { useData } from '../store/DataContext.jsx';
 import { getColors } from '../lib/theme.js';
 import { gRoute, gGravel } from '../lib/gradients.js';
+import { routeImages } from '../lib/routeImages.js';
 import { optimalTyreForRoute } from '../lib/recommend.js';
+import useBreakpoint from '../hooks/useBreakpoint.js';
+import useRouteImg from '../hooks/useRouteImg.js';
 import Hoverable from '../components/Hoverable.jsx';
 import RouteMap from '../components/guide/RouteMap.jsx';
 
@@ -64,11 +67,12 @@ function RouteDetail({ route, c, onScrollToMap, tyres, routeDetails }) {
   const tyreKey = details?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
   const hasWaypoints = details?.waypoints?.length > 0;
+  const img = useRouteImg(route.imgPath, route.fallbackImg);
 
   return (
     <div style={{ borderRadius: 20, overflow: 'hidden', border: `1px solid ${c.border}`, animation: 'fadeIn .3s ease both' }}>
-      {/* Gradient header */}
-      <div style={{ background: route.img, minHeight: 220, padding: '32px 32px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
+      {/* Photo or gradient header */}
+      <div style={{ background: img, minHeight: 220, padding: '32px 32px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(0,8,30,.15) 0%,rgba(0,8,30,.75) 100%)' }} />
         <div style={{ position: 'relative' }}>
           <div style={{ marginBottom: 10 }}>
@@ -200,6 +204,7 @@ function RouteListCard({ route, isActive, onClick, c, tyres, routeDetails }) {
   const tyreKey = routeDetails[route.title]?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
   const terrainLabel = route.surface?.split(' · ')[0] || (route.t === 'gravel' ? 'Gravel' : 'Route');
+  const img = useRouteImg(route.imgPath, route.fallbackImg);
 
   return (
     <Hoverable
@@ -214,8 +219,8 @@ function RouteListCard({ route, isActive, onClick, c, tyres, routeDetails }) {
       }}
       hoverStyle={{ border: `1.5px solid ${isActive ? '#FCE500' : c.borderStrong}` }}
     >
-      {/* Left: gradient thumb */}
-      <div style={{ width: 48, height: 48, borderRadius: 10, background: route.img, flexShrink: 0, overflow: 'hidden', border: `1px solid ${c.border}` }} />
+      {/* Left: photo or gradient thumb */}
+      <div style={{ width: 48, height: 48, borderRadius: 10, background: img, flexShrink: 0, overflow: 'hidden', border: `1px solid ${c.border}` }} />
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -247,8 +252,9 @@ export default function GuidePage() {
     regions.forEach(({ key }) => {
       (regionRoutes[key] || []).forEach((r) => {
         const tyreKey = routeDetails[r.title]?.tyreKey || optimalTyreForRoute(r);
-        const img = r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length];
-        result.push({ ...r, regionKey: key, tyreKey, img });
+        const fallbackImg = r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length];
+        const imgPath = routeImages[r.title] || null;
+        result.push({ ...r, regionKey: key, tyreKey, imgPath, fallbackImg });
       });
     });
     return result;
@@ -264,7 +270,15 @@ export default function GuidePage() {
   );
 
   const mapSectionRef = useRef(null);
+  const detailRef = useRef(null);
   const scrollToMap = () => mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  function selectRoute(route) {
+    setSelectedRoute(route);
+    if (isMobile) {
+      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+  }
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
@@ -282,6 +296,7 @@ export default function GuidePage() {
     });
   }, [filtered]);
 
+  const { isMobile, isTablet } = useBreakpoint();
   const im = state.theme === 'immersive';
 
   const filterBarBg = im ? 'rgba(0,9,32,.95)' : 'rgba(255,255,255,.95)';
@@ -292,23 +307,23 @@ export default function GuidePage() {
   return (
     <div>
       {/* Page hero */}
-      <div style={{ background: heroBg, padding: '72px 32px 64px', textAlign: 'center' }}>
+      <div style={{ background: heroBg, padding: isMobile ? '48px 20px 40px' : '72px 32px 64px', textAlign: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
           <span style={{ width: 32, height: 1.5, background: '#FCE500' }} />
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.4em', color: '#FCE500', textTransform: 'uppercase' }}>Le Guide</span>
           <span style={{ width: 32, height: 1.5, background: '#FCE500' }} />
         </div>
-        <h1 style={{ margin: '0 0 16px', fontSize: 'clamp(38px,6vw,68px)', fontWeight: 900, letterSpacing: '-.03em', lineHeight: 1, color: '#fff' }}>
+        <h1 style={{ margin: '0 0 16px', fontSize: 'clamp(32px,6vw,68px)', fontWeight: 900, letterSpacing: '-.03em', lineHeight: 1.05, color: '#fff' }}>
           Guide Michelin<br />
           <span style={{ color: '#FCE500' }}>des Routes Cyclistes</span>
         </h1>
-        <p style={{ margin: '0 auto 40px', maxWidth: 560, fontSize: 16, lineHeight: 1.65, color: 'rgba(255,255,255,.72)' }}>
+        <p style={{ margin: '0 auto 32px', maxWidth: 560, fontSize: isMobile ? 15 : 16, lineHeight: 1.65, color: 'rgba(255,255,255,.72)' }}>
           Nos experts sélectionnent les plus beaux parcours d'exception — et, pour chacun, le pneu Michelin qui en révèle tout le potentiel.
         </p>
 
         {/* Star legend */}
-        <div style={{ display: 'inline-flex', gap: 24, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 14, padding: '16px 28px' }}>
-          {[['★★★', 'Parcours d\'exception'], ['★★', 'Parcours remarquable'], ['★', 'Parcours recommandé']].map(([stars, label]) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: isMobile ? 12 : 24, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 14, padding: isMobile ? '14px 16px' : '16px 28px' }}>
+          {[['★★★', 'Exception'], ['★★', 'Remarquable'], ['★', 'Recommandé']].map(([stars, label]) => (
             <div key={stars} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14, color: '#FCE500', letterSpacing: 2 }}>{stars}</span>
               <span style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', fontWeight: 600 }}>{label}</span>
@@ -318,8 +333,8 @@ export default function GuidePage() {
       </div>
 
       {/* Sticky filter bar */}
-      <div style={{ position: 'sticky', top: 72, zIndex: 50, background: filterBarBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: `1px solid ${c.border}`, padding: '14px 32px', transition: 'background .5s ease' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+      <div style={{ position: 'sticky', top: 64, zIndex: 50, background: filterBarBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: `1px solid ${c.border}`, padding: isMobile ? '10px 16px' : '14px 32px', transition: 'background .5s ease' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 20, flexWrap: 'wrap' }}>
           {/* Region */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: c.inkFaint, letterSpacing: '.05em' }}>Région</span>
@@ -362,10 +377,19 @@ export default function GuidePage() {
       </div>
 
       {/* Main content: list + detail */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px 40px', display: 'grid', gridTemplateColumns: '380px 1fr', gap: 28, alignItems: 'start' }}>
+      <div style={{
+        maxWidth: 1280, margin: '0 auto',
+        padding: isMobile ? '20px 16px 32px' : isTablet ? '32px 20px 40px' : '40px 32px 40px',
+        display: 'grid',
+        gridTemplateColumns: isMobile || isTablet ? '1fr' : '380px 1fr',
+        gap: isMobile ? 16 : 28,
+        alignItems: 'start',
+      }}>
 
-        {/* Left: scrollable route list */}
-        <div style={{
+        {/* Left: route list (sticky only on desktop) */}
+        <div style={isMobile || isTablet ? {
+          display: 'flex', flexDirection: 'column', gap: 10,
+        } : {
           position: 'sticky', top: 140,
           display: 'flex', flexDirection: 'column', gap: 10,
           height: 'calc(100vh - 156px)',
@@ -382,7 +406,7 @@ export default function GuidePage() {
                 key={route.title}
                 route={route}
                 isActive={selectedRoute?.title === route.title}
-                onClick={() => setSelectedRoute(route)}
+                onClick={() => selectRoute(route)}
                 c={c}
                 tyres={tyres}
                 routeDetails={routeDetails}
@@ -391,8 +415,8 @@ export default function GuidePage() {
           )}
         </div>
 
-        {/* Right: sticky detail */}
-        <div style={{ position: 'sticky', top: 140 }}>
+        {/* Right: detail (sticky on desktop, inline on mobile) */}
+        <div ref={detailRef} style={isMobile || isTablet ? {} : { position: 'sticky', top: 140 }}>
           {selectedRoute ? (
             <RouteDetail
               key={selectedRoute.title}
@@ -403,7 +427,7 @@ export default function GuidePage() {
               onScrollToMap={routeDetails[selectedRoute.title]?.waypoints ? scrollToMap : null}
             />
           ) : (
-            <div style={{ borderRadius: 20, border: `1px dashed ${c.border}`, padding: '80px 40px', textAlign: 'center' }}>
+            <div style={{ borderRadius: 20, border: `1px dashed ${c.border}`, padding: isMobile ? '48px 24px' : '80px 40px', textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: 16 }}>★</div>
               <p style={{ margin: 0, fontSize: 15, color: c.inkMuted }}>Sélectionnez un parcours pour afficher ses détails et le pneu recommandé.</p>
             </div>
@@ -413,17 +437,19 @@ export default function GuidePage() {
 
       {/* Route map section — full width, always visible when a route with waypoints is selected */}
       {selectedRoute && routeDetails[selectedRoute.title]?.waypoints && (
-        <div ref={mapSectionRef} style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px 80px' }}>
+        <div ref={mapSectionRef} style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 16px 48px' : '0 32px 80px' }}>
           <div style={{ borderRadius: 20, overflow: 'hidden', border: `1px solid ${c.border}` }}>
             {/* Map header */}
-            <div style={{ padding: '20px 28px', background: c.panel, borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontSize: 20 }}>🗺</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 900, color: c.ink }}>Tracé · {selectedRoute.title}</div>
-                <div style={{ fontSize: 12, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>{selectedRoute.loc} · {selectedRoute.distance}</div>
+            <div style={{ padding: isMobile ? '16px 18px' : '20px 28px', background: c.panel, borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                <span style={{ fontSize: 20 }}>🗺</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: c.ink }}>Tracé · {selectedRoute.title}</div>
+                  <div style={{ fontSize: 12, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>{selectedRoute.loc} · {selectedRoute.distance}</div>
+                </div>
               </div>
               {/* Legend */}
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: isMobile ? 10 : 16, flexWrap: 'wrap' }}>
                 {[['Départ', '#84BD00'], ['Point clé', '#FCE500'], ['Sommet', '#582C83'], ['Arrivée', '#00205B']].map(([label, color]) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: c.inkFaint }}>
                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, border: '2px solid #fff', boxShadow: '0 0 0 1px rgba(0,0,0,.18)', flexShrink: 0 }} />

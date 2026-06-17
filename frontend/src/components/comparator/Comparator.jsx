@@ -2,6 +2,7 @@ import { useApp } from '../../store/AppContext.jsx';
 import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
 import { scrollToId } from '../../lib/scroll.js';
+import useBreakpoint from '../../hooks/useBreakpoint.js';
 import Hoverable from '../Hoverable.jsx';
 import TyreSelect from './TyreSelect.jsx';
 
@@ -87,7 +88,7 @@ function StatGrid({ c, tyre, other }) {
   );
 }
 
-function MarginalGains({ c, leftT, rightT }) {
+function MarginalGains({ c, leftT, rightT, isMobile }) {
   const lw = leftT.watts;
   const rw = rightT.watts;
   if (!lw || !rw || lw === rw) return null;
@@ -111,12 +112,13 @@ function MarginalGains({ c, leftT, rightT }) {
   const lighterName = lGr && rGr && lGr < rGr ? leftT.name : rightT.name;
 
   const accent = '#FCE500';
+  const statFontSize = isMobile ? 24 : 32;
 
   return (
-    <div style={{ marginTop: 28, background: `linear-gradient(120deg,#00205B,#27509B)`, borderRadius: 20, padding: '28px 32px', display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
-      <div style={{ flex: 1, minWidth: 220 }}>
+    <div style={{ marginTop: 28, background: `linear-gradient(120deg,#00205B,#27509B)`, borderRadius: 20, padding: isMobile ? '20px 16px' : '24px 28px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 16 : 24, flexWrap: 'wrap', alignItems: isMobile ? 'stretch' : 'center' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.35em', color: 'rgba(252,229,0,.7)', textTransform: 'uppercase', marginBottom: 10 }}>Marginal Gains</div>
-        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: '#fff' }}>
+        <p style={{ margin: 0, fontSize: isMobile ? 14 : 15, lineHeight: 1.6, color: '#fff' }}>
           Le <strong style={{ color: accent }}>{winner.name}</strong> roule à{' '}
           <strong style={{ color: accent }}>{deltaW}W de moins</strong>{' '}
           que le {loser.brand} {loser.name} — soit{' '}
@@ -125,20 +127,20 @@ function MarginalGains({ c, leftT, rightT }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 24, flexShrink: 0, flexWrap: 'wrap' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 32, fontWeight: 900, color: accent, lineHeight: 1 }}>−{deltaW}W</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4 }}>résistance roulement</div>
+      <div style={{ display: 'flex', gap: isMobile ? 0 : 24, flexWrap: 'nowrap', justifyContent: isMobile ? 'space-between' : 'flex-end' }}>
+        <div style={{ textAlign: 'center', flex: isMobile ? 1 : 'none' }}>
+          <div style={{ fontSize: statFontSize, fontWeight: 900, color: accent, lineHeight: 1 }}>−{deltaW}W</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4 }}>rés. roulement</div>
         </div>
         {deltaGr > 0 && (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 32, fontWeight: 900, color: accent, lineHeight: 1 }}>−{deltaGr}g</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4 }}>la paire · {lighterName}</div>
+          <div style={{ textAlign: 'center', flex: isMobile ? 1 : 'none' }}>
+            <div style={{ fontSize: statFontSize, fontWeight: 900, color: accent, lineHeight: 1 }}>−{deltaGr}g</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4 }}>la paire</div>
           </div>
         )}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 32, fontWeight: 900, color: accent, lineHeight: 1 }}>≈{timeStr}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4 }}>gagnées / Ventoux</div>
+        <div style={{ textAlign: 'center', flex: isMobile ? 1 : 'none' }}>
+          <div style={{ fontSize: statFontSize, fontWeight: 900, color: accent, lineHeight: 1, wordBreak: 'keep-all' }}>≈{timeStr}</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4 }}>gagnées / Ventoux</div>
         </div>
       </div>
     </div>
@@ -149,6 +151,7 @@ export default function Comparator() {
   const { state, actions } = useApp();
   const { tyres, competitors, metricDefs } = useData();
   const c = getColors(state.theme);
+  const { isMobile } = useBreakpoint();
 
   const ALL = { ...tyres, ...competitors };
   const hasReco = !!state.recommended;
@@ -201,23 +204,26 @@ export default function Comparator() {
   );
 
   return (
-    <section id="compare" style={{ position: 'relative', padding: '96px 32px', background: c.sectionB, transition: 'background .5s ease' }}>
+    <section id="compare" style={{ position: 'relative', padding: isMobile ? '60px 16px' : '96px 32px', background: c.sectionB, transition: 'background .5s ease' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 18 }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.3em', color: '#FCE500', textTransform: 'uppercase', marginBottom: 14 }}>Face à face</div>
-            <h2 style={{ margin: 0, fontSize: 'clamp(34px,4vw,52px)', fontWeight: 900, letterSpacing: '-.025em', lineHeight: 1, color: c.ink }}>Comparateur</h2>
+            <h2 style={{ margin: 0, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-.025em', lineHeight: 1, color: c.ink }}>Comparateur</h2>
           </div>
-          <p style={{ margin: 0, maxWidth: 380, fontSize: 15, lineHeight: 1.6, color: c.inkMuted }}>{compareIntro}</p>
+          {!isMobile && <p style={{ margin: 0, maxWidth: 380, fontSize: 15, lineHeight: 1.6, color: c.inkMuted }}>{compareIntro}</p>}
         </div>
 
-        {/* Three-column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 96px 1fr', alignItems: 'stretch', marginTop: 40 }}>
+        {/* Three-column grid (desktop) / stacked (mobile) */}
+        <div style={isMobile
+          ? { display: 'flex', flexDirection: 'column', marginTop: 28 }
+          : { display: 'grid', gridTemplateColumns: '1fr 96px 1fr', alignItems: 'stretch', marginTop: 40 }
+        }>
 
           {/* LEFT */}
-          <div style={{ background: c.panel, border: `1.5px solid ${leftIsReco ? '#FCE500' : c.borderStrong}`, borderRadius: '20px 0 0 20px', padding: 28, position: 'relative' }}>
+          <div style={{ background: c.panel, border: `1.5px solid ${leftIsReco ? '#FCE500' : c.borderStrong}`, borderRadius: isMobile ? '20px 20px 0 0' : '20px 0 0 20px', padding: isMobile ? 20 : 28, position: 'relative' }}>
             {leftIsReco && (
               <span style={{ position: 'absolute', top: -12, left: 24, fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#00205B', background: '#FCE500', padding: '5px 12px', borderRadius: 999 }}>Recommandé pour vous</span>
             )}
@@ -236,31 +242,47 @@ export default function Comparator() {
             <StatGrid c={c} tyre={leftT} other={rightT} />
           </div>
 
-          {/* VS column */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: c.sectionB, padding: '20px 0' }}>
-            {deltaWatts != null && deltaWatts !== 0 && (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: deltaWatts > 0 ? WIN : LOSE }}>
-                  {deltaWatts > 0 ? '▲' : '▼'} {Math.abs(deltaWatts)}W
-                </div>
-                <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>rés. roulement</div>
+          {/* VS separator */}
+          {isMobile ? (
+            <div style={{ display: 'flex', alignItems: 'center', background: c.sectionB, padding: '14px 20px', borderLeft: `1.5px solid ${c.borderStrong}`, borderRight: `1.5px solid ${c.border}` }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                {deltaWatts != null && deltaWatts !== 0 && (
+                  <>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: deltaWatts > 0 ? WIN : LOSE }}>{deltaWatts > 0 ? '▲' : '▼'} {Math.abs(deltaWatts)}W</div>
+                    <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>rés. roulement</div>
+                  </>
+                )}
               </div>
-            )}
-
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: c.ink, color: c.sectionB, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, letterSpacing: '-.02em', boxShadow: '0 8px 20px rgba(0,0,0,.25)' }}>VS</div>
-
-            {deltaGrPair != null && deltaGrPair !== 0 && (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: deltaGrPair > 0 ? WIN : LOSE }}>
-                  {deltaGrPair > 0 ? '▲' : '▼'} {Math.abs(deltaGrPair)}g
-                </div>
-                <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>la paire</div>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: c.ink, color: c.sectionB, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, letterSpacing: '-.02em', boxShadow: '0 8px 20px rgba(0,0,0,.25)', flexShrink: 0 }}>VS</div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                {deltaGrPair != null && deltaGrPair !== 0 && (
+                  <>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: deltaGrPair > 0 ? WIN : LOSE }}>{deltaGrPair > 0 ? '▲' : '▼'} {Math.abs(deltaGrPair)}g</div>
+                    <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>la paire</div>
+                  </>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: c.sectionB, padding: '20px 0' }}>
+              {deltaWatts != null && deltaWatts !== 0 && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: deltaWatts > 0 ? WIN : LOSE }}>{deltaWatts > 0 ? '▲' : '▼'} {Math.abs(deltaWatts)}W</div>
+                  <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>rés. roulement</div>
+                </div>
+              )}
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: c.ink, color: c.sectionB, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, letterSpacing: '-.02em', boxShadow: '0 8px 20px rgba(0,0,0,.25)', flexShrink: 0 }}>VS</div>
+              {deltaGrPair != null && deltaGrPair !== 0 && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: deltaGrPair > 0 ? WIN : LOSE }}>{deltaGrPair > 0 ? '▲' : '▼'} {Math.abs(deltaGrPair)}g</div>
+                  <div style={{ fontSize: 10, color: c.inkFaint, fontWeight: 600, marginTop: 2 }}>la paire</div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* RIGHT */}
-          <div style={{ background: c.panel, border: `1.5px solid ${c.border}`, borderRadius: '0 20px 20px 0', padding: 28 }}>
+          <div style={{ background: c.panel, border: `1.5px solid ${c.border}`, borderRadius: isMobile ? '0 0 20px 20px' : '0 20px 20px 0', padding: isMobile ? 20 : 28 }}>
             {cardHeader(rightT, rightIsOther, false,
               <TyreSelect c={c} value={state.compareRight} onChange={actions.onCompareChange} />,
             )}
@@ -278,7 +300,7 @@ export default function Comparator() {
         </div>
 
         {/* Marginal gains banner */}
-        <MarginalGains c={c} leftT={leftT} rightT={rightT} />
+        <MarginalGains c={c} leftT={leftT} rightT={rightT} isMobile={isMobile} />
 
         {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>

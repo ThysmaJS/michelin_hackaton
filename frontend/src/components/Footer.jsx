@@ -1,18 +1,20 @@
 import { useApp } from '../store/AppContext.jsx';
 import { useData } from '../store/DataContext.jsx';
 import { getFoot } from '../lib/theme.js';
+import useBreakpoint from '../hooks/useBreakpoint.js';
 import Hoverable from './Hoverable.jsx';
 
 export default function Footer() {
   const { state } = useApp();
   const { socials, footerCols, legalLinks } = useData();
   const foot = getFoot(state.theme);
+  const { isMobile, isTablet } = useBreakpoint();
 
   return (
-    <footer style={{ background: foot.bg, color: foot.ink, padding: '72px 32px 36px', borderTop: `1px solid ${foot.border}`, transition: 'background .5s ease,color .5s ease' }}>
+    <footer style={{ background: foot.bg, color: foot.ink, padding: isMobile ? '48px 16px 28px' : '72px 32px 36px', borderTop: `1px solid ${foot.border}`, transition: 'background .5s ease,color .5s ease' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 40, paddingBottom: 48, borderBottom: `1px solid ${foot.border}` }}>
-          <div>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? '1.4fr 1fr 1fr' : '1.4fr 1fr 1fr 1fr', gap: isMobile ? '32px 20px' : 40, paddingBottom: 40, borderBottom: `1px solid ${foot.border}` }}>
+          <div style={isMobile ? { gridColumn: '1 / -1' } : {}}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 18 }}>
               <div style={{ width: 34, height: 34, borderRadius: '50%', background: foot.logoBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: foot.logoDot }} />

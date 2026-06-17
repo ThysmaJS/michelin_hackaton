@@ -2,7 +2,9 @@ import { useApp } from '../../store/AppContext.jsx';
 import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
 import { gRoute, gGravel } from '../../lib/gradients.js';
+import { routeImages } from '../../lib/routeImages.js';
 import { postalToRegion, optimalTyreForRoute } from '../../lib/recommend.js';
+import useBreakpoint from '../../hooks/useBreakpoint.js';
 import Hoverable from '../Hoverable.jsx';
 import RouteCard from './RouteCard.jsx';
 
@@ -10,6 +12,7 @@ export default function GuideRoute() {
   const { state, actions } = useApp();
   const { tyres, competitors, regions, regionRoutes } = useData();
   const c = getColors(state.theme);
+  const { isMobile, isTablet } = useBreakpoint();
 
   const ALL = { ...tyres, ...competitors };
   const selectedKey = state.compareLeft;
@@ -36,7 +39,8 @@ export default function GuideRoute() {
     const isOptimal = isMichelin && selectedKey === optimalKey;
     return {
       title: r.title, region: r.loc, distance: r.distance, surface: r.surface, stars: r.stars, blurb: r.blurb,
-      img: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
+      imgPath: routeImages[r.title] || null,
+      fallbackImg: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
       reco: isOptimal
         ? { kind: 'match', label: `Idéal pour votre ${selectedT.name}` }
         : { kind: 'michelin', label: `Michelin optimal · ${michelin.name}` },
@@ -48,7 +52,7 @@ export default function GuideRoute() {
     : `Vous roulez en ${selectedT.brand} ${selectedT.name}. Voici les plus beaux parcours autour de ${regionObj.label} — et, pour chacun, le pneu Michelin qui l'exploite au mieux.`;
 
   return (
-    <section id="guide" style={{ position: 'relative', padding: '96px 32px', background: c.sectionA, transition: 'background .5s ease' }}>
+    <section id="guide" style={{ position: 'relative', padding: isMobile ? '60px 16px' : '96px 32px', background: c.sectionA, transition: 'background .5s ease' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto 12px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
@@ -70,7 +74,7 @@ export default function GuideRoute() {
           <span style={{ fontSize: 12, fontWeight: 600, color: c.inkFaint, background: c.chip, border: `1px solid ${c.border}`, padding: '5px 11px', borderRadius: 999 }}>{regionSource}</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22, marginTop: 36 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 20, marginTop: 36 }}>
           {guideRoutes.map((r) => <RouteCard key={r.title} c={c} route={r} reco={r.reco} onSelect={() => actions.navigateToRoute(r.title)} />)}
         </div>
 
