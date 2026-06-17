@@ -1,9 +1,65 @@
-import { getColors, getHero } from '../lib/theme.js';
+import { Suspense, useEffect, useRef } from 'react';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Box3, Vector3 } from 'three';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { getHero } from '../lib/theme.js';
 import { useApp } from '../store/AppContext.jsx';
 import { useData } from '../store/DataContext.jsx';
 import { scrollToId } from '../lib/scroll.js';
 import useHeroTilt from '../hooks/useHeroTilt.js';
 import Hoverable from './Hoverable.jsx';
+
+const voltageAssetUrls = import.meta.glob('../../OBJ/*.{png,jpg,jpeg,webp,mtl,obj}', { eager: true, import: 'default' });
+const voltageAssetByName = Object.fromEntries(
+  Object.entries(voltageAssetUrls).map(([path, url]) => [path.split('/').pop(), url]),
+);
+const voltageObjUrl = voltageAssetByName['voltage.obj'];
+const voltageMtlUrl = voltageAssetByName['voltage.mtl'];
+
+function VoltageModel() {
+  const materials = useLoader(MTLLoader, voltageMtlUrl, (loader) => {
+    loader.manager.setURLModifier((url) => voltageAssetByName[url] ?? voltageAssetByName[url.split('/').pop()] ?? url);
+  });
+  const object = useLoader(OBJLoader, voltageObjUrl, (loader) => {
+    loader.setMaterials(materials);
+  });
+  const groupRef = useRef(null);
+
+  useEffect(() => {
+    object.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+
+    const box = new Box3().setFromObject(object);
+    const size = new Vector3();
+    const center = new Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    object.position.sub(center);
+    const maxSize = Math.max(size.x, size.y, size.z) || 1;
+    object.scale.setScalar(3.2 / maxSize);
+    object.rotation.set(0.02, Math.PI * 0.38, -0.06);
+  }, [object]);
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const t = state.clock.elapsedTime;
+    groupRef.current.rotation.y = Math.sin(t * 0.28) * 0.22;
+    groupRef.current.rotation.x = -0.14 + Math.sin(t * 0.2) * 0.04;
+    groupRef.current.position.y = Math.sin(t * 0.52) * 0.08;
+  });
+
+  return (
+    <group ref={groupRef}>
+      <primitive object={object} />
+    </group>
+  );
+}
 
 // Inline 3D stage (kept local to the hero — purely decorative).
 function HeroStage({ hero, tiltRef }) {
@@ -11,24 +67,23 @@ function HeroStage({ hero, tiltRef }) {
     <div style={{ position: 'absolute', right: '-1%', top: '50%', transform: 'translateY(-50%)', width: '50%', height: '82%', perspective: 1200, pointerEvents: 'none', zIndex: 1 }}>
       <div ref={tiltRef} style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d', transition: 'transform .25s cubic-bezier(.2,.7,.3,1)', willChange: 'transform' }}>
         <div style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d', animation: 'float3d 7s ease-in-out infinite' }}>
-          {/* back stage plane */}
-          <div style={{ position: 'absolute', left: '6%', top: '6%', right: '6%', bottom: '6%', borderRadius: 28, background: hero.stageBg, border: `1px solid ${hero.stageBorder}`, boxShadow: '0 40px 90px rgba(0,0,0,.35)', transform: 'translateZ(-70px)', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: hero.stageGlow }} />
-            <div style={{ position: 'absolute', right: '-22%', top: '-26%', width: '80%', height: '80%', borderRadius: '50%', border: `34px solid ${hero.pedestalRing}` }} />
+          <div style={{ position: 'absolute', inset: '8% 6% 10%', borderRadius: 32, overflow: 'hidden', filter: 'drop-shadow(0 36px 70px rgba(0,0,0,.32))' }}>
+            <Canvas
+              shadows
+              dpr={[1, 1.5]}
+              camera={{ position: [0, 1.05, 6.5], fov: 28 }}
+              gl={{ antialias: true, alpha: true }}
+              style={{ position: 'absolute', inset: 0 }}
+            >
+              <ambientLight intensity={1.55} />
+              <directionalLight position={[5, 7, 8]} intensity={2.1} castShadow />
+              <directionalLight position={[-4, 1, 4]} intensity={0.65} />
+              <spotLight position={[0, 6, 4]} intensity={1.2} angle={0.55} penumbra={0.7} castShadow />
+              <Suspense fallback={null}>
+                <VoltageModel />
+              </Suspense>
+            </Canvas>
           </div>
-          {/* pedestal disc */}
-          <div style={{ position: 'absolute', left: '50%', top: '62%', width: '62%', height: '24%', transform: 'translate(-50%,-50%) translateZ(-10px) rotateX(72deg)', borderRadius: '50%', background: hero.pedestal, opacity: 0.85, filter: 'blur(.5px)' }} />
-          {/* floating tyre ring */}
-          <div style={{ position: 'absolute', left: '30%', top: '30%', width: '44%', height: '44%', transform: 'translateZ(40px)', borderRadius: '50%', border: `26px solid ${hero.tyreRing}`, boxShadow: '0 24px 50px rgba(0,0,0,.4), inset 0 0 30px rgba(0,0,0,.4)', animation: 'spinSlow 26s linear infinite' }} />
-          {/* cyclist placeholder card */}
-          <div style={{ position: 'absolute', left: '50%', top: '48%', width: '58%', transform: 'translate(-50%,-50%) translateZ(95px)', borderRadius: 20, background: hero.cardBg, border: `1px dashed ${hero.cardBorder}`, backdropFilter: 'blur(4px)', padding: 24, textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,.3)' }}>
-            <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 10 }}>🚴</div>
-            <div style={{ fontFamily: 'ui-monospace,monospace', fontSize: 12, fontWeight: 700, letterSpacing: '.04em', color: hero.labelInk }}>[ rendu 3D — cycliste ]</div>
-            <div style={{ fontFamily: 'ui-monospace,monospace', fontSize: 10, color: hero.labelSub, marginTop: 5 }}>déposez le modèle / l'image 3D ici</div>
-          </div>
-          {/* floating accent chips */}
-          <div style={{ position: 'absolute', left: '8%', top: '24%', transform: 'translateZ(130px)', background: '#FCE500', color: '#00205B', fontSize: 11, fontWeight: 800, letterSpacing: '.04em', padding: '7px 12px', borderRadius: 999, boxShadow: '0 14px 28px rgba(0,0,0,.3)', animation: 'float3dB 5.5s ease-in-out infinite' }}>Power Cup</div>
-          <div style={{ position: 'absolute', right: '6%', bottom: '20%', transform: 'translateZ(120px)', background: hero.chip3d, color: hero.chip3dInk, fontSize: 11, fontWeight: 800, letterSpacing: '.04em', padding: '7px 12px', borderRadius: 999, boxShadow: '0 14px 28px rgba(0,0,0,.25)', animation: 'float3d 6.5s ease-in-out infinite' }}>215 g · 92 grip</div>
         </div>
       </div>
     </div>
@@ -38,7 +93,6 @@ function HeroStage({ hero, tiltRef }) {
 export default function Hero() {
   const { state } = useApp();
   const { heroStats } = useData();
-  const c = getColors(state.theme);
   const hero = getHero(state.theme);
   const { heroRef, tiltRef } = useHeroTilt();
 

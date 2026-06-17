@@ -1,0 +1,87 @@
+# Blender 3.3.1 MTL File: 'voltage.blend'
+# www.blender.org
+
+newmtl BarsSeatPedals
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd BarsSeatPedals_Diffuse.png
+map_Ns BarsSeatPedals_Roughness.png
+map_refl BarsSeatPedals_Metallic.png
+
+newmtl CrankDamper
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Cranks_Damper_Diffuse.png
+map_Ns Cranks_Damper_Roughness.png
+map_refl Cranks_Damper_Metallic.png
+
+newmtl Fork
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Fork_Diffuse.png
+map_Ns Fork_Roughness.png
+map_refl Fork_Mettalic.png
+
+newmtl Frame
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Frame_Diffuse.png
+map_Ns Frame_Roughness.png
+
+newmtl FrameBlack
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Frame_Diffuse.png
+map_Ns Frame_Roughness.png
+
+newmtl Parts
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Parts_Diffuse.png
+map_Ns Parts_Roughness.png
+map_refl Parts_Metallic.png
+
+newmtl Tires
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Tire_Diffuse.png
+map_Ns Tires_Roughness.png
+
+newmtl Wheels
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Wheels_Diffuse.png
+map_Ns Wheels_Roughness.png
+map_refl Wheels_Metallic.png
