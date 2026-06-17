@@ -2,6 +2,7 @@ import { useApp } from '../../store/AppContext.jsx';
 import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
 import { scrollToId } from '../../lib/scroll.js';
+import useBreakpoint from '../../hooks/useBreakpoint.js';
 import Hoverable from '../Hoverable.jsx';
 
 const hasAdvancedData = (s) =>
@@ -68,6 +69,7 @@ export default function WizardResults() {
   const { state, actions } = useApp();
   const { tyres } = useData();
   const c = getColors(state.theme);
+  const { isMobile } = useBreakpoint();
 
   const recT    = tyres[state.recommended] || tyres['power-road'];
   const why     = buildWhy(recT, state);
@@ -85,7 +87,7 @@ export default function WizardResults() {
   ];
 
   return (
-    <div style={{ flex: 1, padding: 40, animation: 'fadeSlide .5s ease both' }}>
+    <div style={{ flex: 1, padding: isMobile ? 20 : 40, animation: 'fadeSlide .5s ease both' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase', color: '#FCE500' }}>✓ Votre recommandation</span>
         <button
@@ -98,16 +100,16 @@ export default function WizardResults() {
 
       <AdvancedSummary state={state} c={c} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 28, alignItems: 'center', background: c.panel2, border: `1px solid ${c.border}`, borderRadius: 18, padding: 26 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '80px 1fr' : '180px 1fr', gap: isMobile ? 16 : 28, alignItems: 'center', background: c.panel2, border: `1px solid ${c.border}`, borderRadius: 18, padding: isMobile ? 18 : 26 }}>
         {/* Tire visual placeholder */}
-        <div style={{ aspectRatio: '1', borderRadius: '50%', background: 'radial-gradient(circle at 50% 38%, #16335f, #050d1f 72%)', border: '24px solid #0a1a36', boxShadow: 'inset 0 0 40px rgba(0,0,0,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <span style={{ position: 'absolute', inset: 18, borderRadius: '50%', border: '2px dashed rgba(252,229,0,.4)' }} />
-          <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 10, color: 'rgba(255,255,255,.5)', textAlign: 'center' }}>visuel<br />pneu</span>
+        <div style={{ width: isMobile ? 80 : '100%', aspectRatio: '1', borderRadius: '50%', background: 'radial-gradient(circle at 50% 38%, #16335f, #050d1f 72%)', border: isMobile ? '12px solid #0a1a36' : '24px solid #0a1a36', boxShadow: 'inset 0 0 40px rgba(0,0,0,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
+          <span style={{ position: 'absolute', inset: isMobile ? 8 : 18, borderRadius: '50%', border: '2px dashed rgba(252,229,0,.4)' }} />
+          {!isMobile && <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 10, color: 'rgba(255,255,255,.5)', textAlign: 'center' }}>visuel<br />pneu</span>}
         </div>
 
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.1em', color: c.inkFaint, textTransform: 'uppercase' }}>{recT.tag}</div>
-          <h3 style={{ margin: '6px 0 10px', fontSize: 30, fontWeight: 900, letterSpacing: '-.02em', color: c.ink }}>{recT.name}</h3>
+          <h3 style={{ margin: '6px 0 10px', fontSize: isMobile ? 22 : 30, fontWeight: 900, letterSpacing: '-.02em', color: c.ink }}>{recT.name}</h3>
           <p style={{ margin: '0 0 18px', fontSize: 15, lineHeight: 1.55, color: c.inkMuted, maxWidth: 440 }}>{why}</p>
 
           {/* Advanced stats grid */}
@@ -144,19 +146,19 @@ export default function WizardResults() {
             ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 24, fontWeight: 900, color: c.ink }}>{recT.price}</span>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? 10 : 14, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: c.ink }}>{recT.price}</span>
             <Hoverable
               as="button"
               onClick={() => scrollToId('compare')}
-              style={{ background: '#FCE500', color: '#00205B', border: 0, fontFamily: 'inherit', fontWeight: 800, fontSize: 14, padding: '13px 24px', borderRadius: 999, cursor: 'pointer', transition: 'transform .2s' }}
+              style={{ background: '#FCE500', color: '#00205B', border: 0, fontFamily: 'inherit', fontWeight: 800, fontSize: 14, padding: '13px 24px', borderRadius: 999, cursor: 'pointer', transition: 'transform .2s', textAlign: 'center' }}
               hoverStyle={{ transform: 'translateY(-2px)' }}
             >
               Comparer ce pneu →
             </Hoverable>
             <button
               onClick={() => scrollToId('buy')}
-              style={{ background: 'transparent', color: c.ink, border: `1px solid ${c.borderStrong}`, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, padding: '13px 22px', borderRadius: 999, cursor: 'pointer' }}
+              style={{ background: 'transparent', color: c.ink, border: `1px solid ${c.borderStrong}`, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, padding: '13px 22px', borderRadius: 999, cursor: 'pointer', textAlign: 'center' }}
             >
               Où l'acheter
             </button>
