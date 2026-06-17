@@ -26,26 +26,26 @@ export default function Buy() {
         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 36 }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.3em', color: '#FCE500', textTransform: 'uppercase', marginBottom: 14 }}>Où acheter</div>
-            <h2 style={{ margin: 0, fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-.025em', lineHeight: 1, color: c.ink }}>Trouver un revendeur</h2>
+            <h2 style={{ margin: 0, fontSize: 'clamp(22px,5vw,52px)', fontWeight: 900, letterSpacing: '-.025em', lineHeight: 1.1, color: c.ink }}>Trouver un revendeur</h2>
           </div>
           {!isMobile && <p style={{ margin: 0, maxWidth: 380, fontSize: 15, lineHeight: 1.6, color: c.inkMuted }}>Localisez les points de vente proposant <strong style={{ color: c.ink }}>{leftT.name}</strong> près de chez vous.</p>}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '380px 1fr', gap: 20, alignItems: 'stretch' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
               <Hoverable
                 as="input"
                 value={state.postal}
                 onChange={actions.onPostalChange}
                 placeholder="Code postal ou ville"
-                style={{ flex: 1, fontFamily: 'inherit', fontSize: 16, fontWeight: 600, color: c.ink, background: c.panel, border: `1.5px solid ${c.fieldBorder}`, borderRadius: 14, padding: '15px 18px', outline: 'none', transition: 'border-color .2s' }}
+                style={{ flex: 1, minWidth: 0, fontFamily: 'inherit', fontSize: 16, fontWeight: 600, color: c.ink, background: c.panel, border: `1.5px solid ${c.fieldBorder}`, borderRadius: 14, padding: '15px 18px', outline: 'none', transition: 'border-color .2s' }}
                 focusStyle={{ border: '1.5px solid #27509b' }}
               />
               <Hoverable
                 as="button"
                 onClick={actions.doSearch}
-                style={{ background: '#27509b', color: '#fff', border: 0, fontFamily: 'inherit', fontWeight: 800, fontSize: 15, padding: '0 24px', borderRadius: 14, cursor: 'pointer', transition: 'background .2s' }}
+                style={{ background: '#27509b', color: '#fff', border: 0, fontFamily: 'inherit', fontWeight: 800, fontSize: 15, padding: '15px 24px', borderRadius: 14, cursor: 'pointer', transition: 'background .2s' }}
                 hoverStyle={{ background: '#1d4185' }}
               >
                 Rechercher

@@ -3,8 +3,10 @@ import { useApp } from '../store/AppContext.jsx';
 import { useData } from '../store/DataContext.jsx';
 import { getColors } from '../lib/theme.js';
 import { gRoute, gGravel } from '../lib/gradients.js';
+import { routeImages } from '../lib/routeImages.js';
 import { optimalTyreForRoute } from '../lib/recommend.js';
 import useBreakpoint from '../hooks/useBreakpoint.js';
+import useRouteImg from '../hooks/useRouteImg.js';
 import Hoverable from '../components/Hoverable.jsx';
 import RouteMap from '../components/guide/RouteMap.jsx';
 
@@ -65,11 +67,12 @@ function RouteDetail({ route, c, onScrollToMap, tyres, routeDetails }) {
   const tyreKey = details?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
   const hasWaypoints = details?.waypoints?.length > 0;
+  const img = useRouteImg(route.imgPath, route.fallbackImg);
 
   return (
     <div style={{ borderRadius: 20, overflow: 'hidden', border: `1px solid ${c.border}`, animation: 'fadeIn .3s ease both' }}>
-      {/* Gradient header */}
-      <div style={{ background: route.img, minHeight: 220, padding: '32px 32px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
+      {/* Photo or gradient header */}
+      <div style={{ background: img, minHeight: 220, padding: '32px 32px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(0,8,30,.15) 0%,rgba(0,8,30,.75) 100%)' }} />
         <div style={{ position: 'relative' }}>
           <div style={{ marginBottom: 10 }}>
@@ -201,6 +204,7 @@ function RouteListCard({ route, isActive, onClick, c, tyres, routeDetails }) {
   const tyreKey = routeDetails[route.title]?.tyreKey || route.tyreKey;
   const tyre = tyres[tyreKey];
   const terrainLabel = route.surface?.split(' · ')[0] || (route.t === 'gravel' ? 'Gravel' : 'Route');
+  const img = useRouteImg(route.imgPath, route.fallbackImg);
 
   return (
     <Hoverable
@@ -215,8 +219,8 @@ function RouteListCard({ route, isActive, onClick, c, tyres, routeDetails }) {
       }}
       hoverStyle={{ border: `1.5px solid ${isActive ? '#FCE500' : c.borderStrong}` }}
     >
-      {/* Left: gradient thumb */}
-      <div style={{ width: 48, height: 48, borderRadius: 10, background: route.img, flexShrink: 0, overflow: 'hidden', border: `1px solid ${c.border}` }} />
+      {/* Left: photo or gradient thumb */}
+      <div style={{ width: 48, height: 48, borderRadius: 10, background: img, flexShrink: 0, overflow: 'hidden', border: `1px solid ${c.border}` }} />
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -248,8 +252,9 @@ export default function GuidePage() {
     regions.forEach(({ key }) => {
       (regionRoutes[key] || []).forEach((r) => {
         const tyreKey = routeDetails[r.title]?.tyreKey || optimalTyreForRoute(r);
-        const img = r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length];
-        result.push({ ...r, regionKey: key, tyreKey, img });
+        const fallbackImg = r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length];
+        const imgPath = routeImages[r.title] || null;
+        result.push({ ...r, regionKey: key, tyreKey, imgPath, fallbackImg });
       });
     });
     return result;

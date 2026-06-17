@@ -2,6 +2,7 @@ import { useApp } from '../../store/AppContext.jsx';
 import { useData } from '../../store/DataContext.jsx';
 import { getColors } from '../../lib/theme.js';
 import { gRoute, gGravel } from '../../lib/gradients.js';
+import { routeImages } from '../../lib/routeImages.js';
 import { postalToRegion, optimalTyreForRoute } from '../../lib/recommend.js';
 import useBreakpoint from '../../hooks/useBreakpoint.js';
 import Hoverable from '../Hoverable.jsx';
@@ -38,7 +39,8 @@ export default function GuideRoute() {
     const isOptimal = isMichelin && selectedKey === optimalKey;
     return {
       title: r.title, region: r.loc, distance: r.distance, surface: r.surface, stars: r.stars, blurb: r.blurb,
-      img: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
+      imgPath: routeImages[r.title] || null,
+      fallbackImg: r.t === 'gravel' ? gGravel[gi++ % gGravel.length] : gRoute[ri++ % gRoute.length],
       reco: isOptimal
         ? { kind: 'match', label: `Idéal pour votre ${selectedT.name}` }
         : { kind: 'michelin', label: `Michelin optimal · ${michelin.name}` },
