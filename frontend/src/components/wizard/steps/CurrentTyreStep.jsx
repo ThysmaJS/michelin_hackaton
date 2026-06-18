@@ -17,10 +17,11 @@ export default function CurrentTyreStep() {
             key={label}
             as="button"
             onClick={() => actions.setCurrent(label)}
-            style={{ textAlign: 'left', background: sel ? c.panel2 : c.field, border: `1.5px solid ${sel ? '#FCE500' : c.fieldBorder}`, borderRadius: 14, padding: 16, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
+            style={{ position: 'relative', textAlign: 'left', background: sel ? c.panel2 : c.field, border: `1.5px solid ${sel ? '#FCE500' : c.fieldBorder}`, borderRadius: 14, padding: '16px 18px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
             hoverStyle={{ border: '1.5px solid #27509b' }}
           >
-            <span style={{ display: 'block', fontSize: 15, fontWeight: 700, color: c.ink }}>{label}</span>
+            <span style={{ position: 'absolute', top: 14, right: 14, width: 18, height: 18, borderRadius: '50%', border: `2px solid ${sel ? '#FCE500' : c.borderStrong}`, background: sel ? '#FCE500' : 'transparent', display: 'block' }} />
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 700, color: c.ink, paddingRight: 24 }}>{label}</span>
             <span style={{ display: 'block', fontSize: 12, color: c.inkMuted, marginTop: 3 }}>{sub}</span>
           </Hoverable>
         );

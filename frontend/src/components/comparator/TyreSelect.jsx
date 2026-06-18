@@ -1,4 +1,5 @@
 import { useData } from '../../store/DataContext.jsx';
+import Hoverable from '../Hoverable.jsx';
 
 export default function TyreSelect({ c, value, onChange }) {
   const { tyres, competitors } = useData();
@@ -6,10 +7,13 @@ export default function TyreSelect({ c, value, onChange }) {
   const otherOpts = Object.keys(competitors).map((k) => ({ value: k, label: `${competitors[k].brand} ${competitors[k].name}` }));
 
   return (
-    <select
+    <Hoverable
+      as="select"
       value={value}
       onChange={onChange}
-      style={{ marginTop: 3, width: '100%', fontFamily: 'inherit', fontSize: 19, fontWeight: 900, letterSpacing: '-.01em', color: c.ink, background: 'transparent', border: 0, borderBottom: `1.5px dashed ${c.borderStrong}`, padding: '2px 0', outline: 'none', cursor: 'pointer' }}
+      style={{ width: '100%', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, color: c.ink, background: c.field, border: `1.5px solid ${c.fieldBorder}`, borderRadius: 14, padding: '12px 14px', outline: 'none', cursor: 'pointer', transition: 'border-color .2s', marginTop: 6, marginBottom: 4 }}
+      hoverStyle={{ border: '1.5px solid #27509b' }}
+      focusStyle={{ border: '1.5px solid #27509b' }}
     >
       <optgroup label="Michelin">
         {michelinOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -17,6 +21,6 @@ export default function TyreSelect({ c, value, onChange }) {
       <optgroup label="Autres marques">
         {otherOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </optgroup>
-    </select>
+    </Hoverable>
   );
 }
