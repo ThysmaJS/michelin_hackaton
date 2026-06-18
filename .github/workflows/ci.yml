@@ -11,8 +11,81 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  test-backend:
+    name: Test backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: michelin
+          POSTGRES_PASSWORD: michelin
+          POSTGRES_DB: michelin_velo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://michelin:michelin@localhost:5432/michelin_velo?schema=public
+      NODE_ENV: test
+      THROTTLE_TTL: 60000
+      THROTTLE_LIMIT: 100
+      FRONTEND_ORIGIN: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: backend
+        run: npm test -- --forceExit
+
+      - name: Apply migrations
+        working-directory: backend
+        run: npx prisma migrate deploy
+
+      - name: Seed database
+        working-directory: backend
+        run: npx prisma db seed
+
+      - name: Run e2e tests
+        working-directory: backend
+        run: npm run test:e2e -- --forceExit
+
+  test-frontend:
+    name: Test frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
+
   backend:
     name: Build backend
+    needs: test-backend
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,6 +113,7 @@ jobs:
 
   frontend:
     name: Build frontend
+    needs: test-frontend
     runs-on: ubuntu-latest
     permissions:
       contents: read
