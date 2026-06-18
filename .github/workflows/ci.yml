@@ -48,8 +48,10 @@ jobs:
         run: npm ci
 
       - name: Run unit tests
+        id: unit
+        continue-on-error: true
         working-directory: backend
-        run: npm test -- --forceExit
+        run: npm test -- --forceExit --json --outputFile=unit-results.json
 
       - name: Apply migrations
         working-directory: backend
@@ -60,8 +62,41 @@ jobs:
         run: npx prisma db seed
 
       - name: Run e2e tests
+        id: e2e
+        continue-on-error: true
         working-directory: backend
-        run: npm run test:e2e -- --forceExit
+        run: npm run test:e2e -- --forceExit --json --outputFile=e2e-results.json
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          cat << 'EOF' > /tmp/summary.js
+          const fs = require('fs');
+          function section(file, title) {
+            try {
+              const r = JSON.parse(fs.readFileSync(file, 'utf8'));
+              const ok = r.numFailedTests === 0;
+              const icon = ok ? '✅' : '❌';
+              let out = `### ${icon} ${title}\n\n`;
+              out += `| | |\n|---|---|\n`;
+              out += `| Test Files | **${r.numPassedTestSuites} passed** · ${r.numTotalTestSuites} total |\n`;
+              out += `| Tests      | **${r.numPassedTests} passed** · ${r.numTotalTests} total |\n\n`;
+              if (r.numFailedTests > 0) out += `> ⚠️ ${r.numFailedTests} test(s) en échec\n\n`;
+              return out;
+            } catch (e) {
+              return `### ⚠️ ${title} — résultats non disponibles\n\n`;
+            }
+          }
+          const out = '## 🧪 Backend — Jest Test Report\n\n'
+            + section('backend/unit-results.json', 'Tests unitaires')
+            + section('backend/e2e-results.json', 'Tests e2e');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out);
+          EOF
+          node /tmp/summary.js
+
+      - name: Fail if any test failed
+        if: always() && (steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure')
+        run: exit 1
 
   test-frontend:
     name: Test frontend
